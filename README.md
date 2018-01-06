@@ -12,7 +12,10 @@ Programmed an automated unit test suite for demonstration of the functionalities
 
 Steps to run the project:
 
-Open command prompt
-Go to the path where project is kept
-command: compile
-command: run
+1. Open command prompt
+
+2. Go to the path where project is kept
+
+3. command: compile
+
+4. command: run
