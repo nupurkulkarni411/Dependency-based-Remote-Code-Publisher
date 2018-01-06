@@ -1,0 +1,27 @@
+
+                                             CodeAnalysis
+    ==============================================================================================
+     Wed May  3 19:20:30 2017
+     Path: "C:\Users\lenovo\Desktop\ood check\project4\CodeAnalyzerEx\TestExecutive"
+     Args: TestExecutive.cpp, /m, /r, /f
+                                                                               
+           Code Metrics - Start Line, Size (lines/code), and Complexity (number of scopes)
+    ==============================================================================================
+
+                 file name        type                               name    line    size    cplx
+    -----------------------  ----------  ---------------------------------  ------  ------  ------
+                             namespace                   Global Namespace       1       1       2
+
+                 file name        type                               name    line    size    cplx
+    -----------------------  ----------  ---------------------------------  ------  ------  ------
+         TestExecutive.cpp    function                               main      38      34       1
+
+                          Functions Exceeding Metric Limits and Public Data
+    ==============================================================================================
+                 file name        type                               name    line    size    cplx
+    -----------------------  ----------  ---------------------------------  ------  ------  ------
+
+
+
+    searched     4 dirs
+   processed     1 files

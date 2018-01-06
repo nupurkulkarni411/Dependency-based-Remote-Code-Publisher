@@ -1,0 +1,39 @@
+
+                                             CodeAnalysis
+    ==============================================================================================
+     Tue Apr  4 23:24:13 2017
+     Path: "C:\Users\lenovo\Desktop\ood check\CodeAnalyzerEx\Parser"
+     Args: Parser.h, /m, /r, /f
+                                                                               
+           Code Metrics - Start Line, Size (lines/code), and Complexity (number of scopes)
+    ==============================================================================================
+
+                 file name        type                               name    line    size    cplx
+    -----------------------  ----------  ---------------------------------  ------  ------  ------
+                             namespace                   Global Namespace       1       1      11
+
+                 file name        type                               name    line    size    cplx
+    -----------------------  ----------  ---------------------------------  ------  ------  ------
+                  Parser.h   namespace                       CodeAnalysis      75      59      10
+              public data: class Parser ; 
+                  Parser.h       class                           IBuilder      83       5       2
+                  Parser.h    function                          ~IBuilder      84       2       1
+                  Parser.h       class                            IAction      94       5       2
+                  Parser.h    function                           ~IAction      95       2       1
+                  Parser.h       class                              IRule     105      11       2
+                  Parser.h    function                             ~IRule     108       2       1
+                  Parser.h       class                             Parser     118      11       3
+                  Parser.h    function                             Parser     129       2       1
+                  Parser.h    function                            ~Parser     131       2       1
+
+                          Functions Exceeding Metric Limits and Public Data
+    ==============================================================================================
+                 file name        type                               name    line    size    cplx
+    -----------------------  ----------  ---------------------------------  ------  ------  ------
+
+              public data: Parser.h : 80 - namespace CodeAnalysis
+                class Parser ; 
+
+
+    searched     5 dirs
+   processed     1 files

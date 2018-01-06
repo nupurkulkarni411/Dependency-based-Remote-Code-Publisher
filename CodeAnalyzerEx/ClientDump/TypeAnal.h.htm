@@ -1,0 +1,110 @@
+<!----------------------------------------------------------------------------
+TypeAnal.h.htm - Generated HTML file of Project #3
+Published 04 April 2017
+Nupur Kulkarni, CSE687 - Object Oriented Design, Spring 2017
+
+Note:
+- Markup characters in the text part, enclosed in <pre>...</pre> have been 
+  replaced with escape sequences, e.g., < becomes &lt; and > becomes &gt;
+----------------------------------------------------------------------------->
+<html>
+<head>
+<link rel = stylesheet href = CSSFile.css>
+<script src= JSFile.js></script>
+</head>
+<body>
+<h3>TypeAnal.h</h3>
+<hr />
+<div class=indent><h4>Dependencies:</h4><p><a href = TypeAnal.cpp.htm> TypeAnal.cpp</a></p><p><a href = Logger.cpp.htm> Logger.cpp</a></p></div>
+<hr />
+<pre>
+ #pragma once 
+ #ifndef TYPEANAL_H 
+ #define TYPEANAL_H 
+ /////////////////////////////////////////////////////////////////////// 
+ // TypeAnal.h -   this class is responsible for type analysis and    // 
+ //                creation of type table.                            // 
+ // ver 3.3                                                           // 
+ // Language:    C++, Visual Studio 2015                              // 
+ // Application: Type-based Dependency Analysis,                      // 
+ // CSE687 - Object Oriented Design                                   // 
+ // Author:      Nupur Kulkarni, Syracuse University,                 // 
+ //              nvkulkar@syr.edu                                     // 
+ // Source:      Jim Fawcett, Syracuse University, CST 4-187          // 
+ //              jfawcett@twcny.rr.com                                // 
+ /////////////////////////////////////////////////////////////////////// 
+ /* 
+ * Package Operations: 
+ * ------------------- 
+ * This package provides a public Type Analysis class. 
+ * TypeAnal supports functionalities like performing type analysis 
+ * and storing aanalysis to Type Table. 
+ * 
+  
+ Public Interface: 
+ ================= 
+ void doTypeAnal(); //for performing type analysis 
+ void createTypeTable(ASTNode* pRoot); //creation of type table. 
+ void extractGlobalFunctions(ASTNode * globalNode); // detects global functions 
+ void DFS(ASTNode* pNode); //traverse AST in DFS manner. 
+  
+ * Build Process: 
+ * -------------- 
+ * Required Files: TypeTable.h,Display.h,ActionsAndRules.h 
+ * 
+ * Maintenance History: 
+ * -------------------- 
+ * ver 1.0 : 01 March 2017 
+ * - first release of new design 
+ */ 
+  
+  
+ #include "../Parser/ActionsAndRules.h" 
+ #include &lt;iostream&gt; 
+ #include &lt;functional&gt; 
+ #include "../TypeTable/TypeTable.h" 
+ #include "../Display/Display.h" 
+  
+ #pragma warning (disable : 4101)  // disable warning re unused variable x, below 
+  
+ namespace CodeAnalysis 
+ {<button onClick = "OnClickDiv('div1', 'button1')" id = "button1">-</button><div id = "div1"> 
+ &nbsp;&nbsp;&nbsp;&nbsp;class TypeAnal 
+ &nbsp;&nbsp;&nbsp;&nbsp;{<button onClick = "OnClickDiv('div2', 'button2')" id = "button2">-</button><div id = "div2"> 
+ &nbsp;&nbsp;&nbsp;&nbsp;public: 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;using SPtr = std::shared_ptr&lt;ASTNode*&gt;; 
+  
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TypeAnal(); 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;void doTypeAnal(); 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;void createTypeTable(ASTNode* pRoot); 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;void displayTypeTable(std::string ttout); 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;void extractGlobalFunctions(ASTNode * globalNode); 
+ &nbsp;&nbsp;&nbsp;&nbsp;private: 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;void DFS(ASTNode* pNode); 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AbstrSynTree& ASTref_; 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ScopeStack&lt;ASTNode*&gt; scopeStack_; 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Scanner::Toker& toker_; 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TypeTable& typeTable_; 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Display1 d; 
+ &nbsp;&nbsp;&nbsp;&nbsp;}; 
+</div><br>  
+ &nbsp;&nbsp;&nbsp;&nbsp;inline bool doDisplay(ASTNode* pNode) 
+ &nbsp;&nbsp;&nbsp;&nbsp;{<button onClick = "OnClickDiv('div3', 'button3')" id = "button3">-</button><div id = "div3"> 
+<div id = "div4"> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;static std::string toDisplay[] = { 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"function", "lambda", "class", "struct", "enum", "alias", "typedef" 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}; 
+</div><br> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;for (std::string type : toDisplay) 
+<div id = "div5"> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{ 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if (pNode-&gt;type_ == type) 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;return true; 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;} 
+</div><br> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;return false; 
+ &nbsp;&nbsp;&nbsp;&nbsp;} 
+</div><br>  
+ &nbsp;&nbsp;&nbsp;&nbsp; 
+ } 
+</div><br> #endif 
+
+</pre>
+</body>
+</html>

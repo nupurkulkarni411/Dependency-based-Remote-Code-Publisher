@@ -1,0 +1,139 @@
+<!----------------------------------------------------------------------------
+DepAnal.h.htm - Generated HTML file of Project #3
+Published 04 April 2017
+Nupur Kulkarni, CSE687 - Object Oriented Design, Spring 2017
+
+Note:
+- Markup characters in the text part, enclosed in <pre>...</pre> have been 
+  replaced with escape sequences, e.g., < becomes &lt; and > becomes &gt;
+----------------------------------------------------------------------------->
+<html>
+<head>
+<link rel = stylesheet href = CSSFile.css>
+<script src= JSFile.js></script>
+</head>
+<body>
+<h3>DepAnal.h</h3>
+<hr />
+<div class=indent><h4>Dependencies:</h4><p><a href = HttpMessage.cpp.htm> HttpMessage.cpp</a></p></div>
+<hr />
+<pre>
+ #pragma once 
+ #ifndef DEPANAL_H 
+ #define DEPANAL_H 
+ /////////////////////////////////////////////////////////////////////// 
+ // DepAnal.h -   this class uses type table to analyze dependency    // 
+ //&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; analysis.                                           // 
+ // ver 3.3                                                           // 
+ // Language:    C++, Visual Studio 2015                              // 
+ // Application: Type-based Dependency Analysis,                      // 
+ // CSE687 - Object Oriented Design                                   // 
+ // Author:      Nupur Kulkarni, Syracuse University,                 // 
+ //              nvkulkar@syr.edu                                     // 
+ /////////////////////////////////////////////////////////////////////// 
+ /* 
+ * Package Operations: 
+ * ------------------- 
+ * This package provides a public Dependancy Analysis class. 
+ * DepAnal supports functionalities like analysis of dependancies between files and saving dependancy 
+ * analysis to xml and inmemory database. 
+ * 
+  
+ Public Interface: 
+ ================= 
+ void addDependencyToGraph(const std::string &fileName1, const std::string &fileName2);  // adds dependancy to dependancy graph 
+ void displayGraphWithDependencies(); // displays depedancy graph  
+ Graph&lt;std::string, std::string&gt;& getDependGraph() { return dependancyGraph; } //returns private member of class dependancy graph 
+  
+  
+ * Build Process: 
+ * -------------- 
+ * Required Files: Parser.h,Executive.h,itokcollection.h,ScopeStack.h,Tokenizer.h,SemiExp.h,Graph.h 
+ * 
+ * Maintenance History: 
+ * -------------------- 
+ * ver 1.0 : 03 March 2017 
+ * - first release of new design 
+ * ver 2.0 : 04 April 2017 
+ * - Modified dependancy analysis function 
+ */ 
+  
+ #include &lt;string&gt; 
+ #include &lt;vector&gt; 
+ #include &lt;unordered_map&gt; 
+ #include &lt;set&gt; 
+ #include &lt;iostream&gt; 
+ #include "../Parser/Parser.h" 
+ #include "../Analyzer/Executive.h" 
+ #include "../SemiExp/itokcollection.h" 
+ #include "../ScopeStack/ScopeStack.h" 
+ #include "../Tokenizer/Tokenizer.h" 
+ #include "../SemiExp/SemiExp.h" 
+ #include "../Graph/Graph.h" 
+  
+ using namespace Scanner; 
+  
+ namespace CodeAnalysis 
+ {<button onClick = "OnClickDiv('div1', 'button1')" id = "button1">-</button><div id = "div1"> 
+ &nbsp;&nbsp;&nbsp;&nbsp;class DepAnal 
+ &nbsp;&nbsp;&nbsp;&nbsp;{<button onClick = "OnClickDiv('div2', 'button2')" id = "button2">-</button><div id = "div2"> 
+ &nbsp;&nbsp;&nbsp;&nbsp;public: 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;using Path = std::string; 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;using Pattern = std::string; 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;using Patterns = std::vector&lt;Pattern&gt;; 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;using File = std::string; 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;using Files = std::vector&lt;File&gt;; 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;using Ext = std::string; 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;using Options = std::vector&lt;char&gt;; 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;using FileMap = std::unordered_map&lt;Pattern, Files&gt;; 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;using DependMap = std::unordered_map&lt;std::string, std::set&lt;std::string>>; 
+ &nbsp;&nbsp;&nbsp;&nbsp;public: 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;DepAnal::DepAnal() : typeTable(Repository::getInstance()-&gt;typeTable()), 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;dependancyGraph(Repository::getInstance()-&gt;dependencyGraph()) 
+<div id = "div3"> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{ 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;pToker = new Toker; 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;pToker-&gt;returnComments(false); 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;pSemi = new SemiExp(pToker); 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;pParser = new Parser(pSemi); 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;} 
+</div><br> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;bool ProcessCommandLine(int argc, char* argv[]); 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;void getSourceFiles(); 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;void processSourceCode(); 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;bool Attach(const std::string& name); 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;void addVerticesToGraph(); 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;void addDependencyToGraph(const std::string &fileName1, const std::string &fileName2); 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;void displayGraphWithDependencies(); 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Graph&lt;std::string, std::string&gt;& getDependGraph() { return dependancyGraph; } 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;DepAnal::~DepAnal() 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{<button onClick = "OnClickDiv('div4', 'button4')" id = "button4">-</button><div id = "div4"> 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;delete pParser; 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;delete pSemi; 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;delete pToker; 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if (pIn != nullptr) 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;pIn-&gt;close(); 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;delete pIn; 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;} 
+</div><br>  
+ &nbsp;&nbsp;&nbsp;&nbsp;private: 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Path path_; 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Patterns patterns_; 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Options options_; 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FileMap fileMap_; 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Parser* pParser; 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TypeTable &typeTable; 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;DependMap dependancyMap; 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::ifstream* pIn; 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Scanner::Toker* pToker; 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Scanner::SemiExp* pSemi; 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Graph&lt;std::string, std::string&gt; &dependancyGraph; 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Display&lt;std::string, std::string&gt; displayDependancy; 
+ &nbsp;&nbsp;&nbsp;&nbsp;}; 
+</div><br> } 
+</div><br> #endif 
+
+</pre>
+</body>
+</html>

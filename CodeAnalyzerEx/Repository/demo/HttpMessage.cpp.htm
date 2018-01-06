@@ -1,0 +1,231 @@
+<!----------------------------------------------------------------------------
+HttpMessage.cpp.htm - Generated HTML file of Project #3
+Published 04 April 2017
+Nupur Kulkarni, CSE687 - Object Oriented Design, Spring 2017
+
+Note:
+- Markup characters in the text part, enclosed in <pre>...</pre> have been 
+  replaced with escape sequences, e.g., < becomes &lt; and > becomes &gt;
+----------------------------------------------------------------------------->
+<html>
+<head>
+<link rel = stylesheet href = CSSFile.css>
+<script src= JSFile.js></script>
+</head>
+<body>
+<h3>HttpMessage.cpp</h3>
+<hr />
+<div class=indent><h4>Dependencies:</h4><p><a href = HttpMessage.h.htm> HttpMessage.h</a></p><p><a href = SemiExp.cpp.htm> SemiExp.cpp</a></p><p><a href = Logger.cpp.htm> Logger.cpp</a></p><p><a href = Graph.h.htm> Graph.h</a></p><p><a href = Graph.cpp.htm> Graph.cpp</a></p><p><a href = ConvertToHtml.cpp.htm> ConvertToHtml.cpp</a></p><p><a href = MockChannel.cpp.htm> MockChannel.cpp</a></p><p><a href = MsgServer.cpp.htm> MsgServer.cpp</a></p><p><a href = TypeAnal.cpp.htm> TypeAnal.cpp</a></p><p><a href = Window.cpp.htm> Window.cpp</a></p></div>
+<hr />
+<pre>
+ /////////////////////////////////////////////////////////////////////// 
+ // HTTPMessage.cpp - Defines HTTP style messages to be used for      // 
+ //&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; client-server interaction                       // 
+ // Platform:    Lenovo Ideapad 500, Windows 10, AMD A10 x64          // 
+ // Application: Remote Code Publisher, Project 4                     // 
+ //              CSE687 - Object Oriented Design                      // 
+ // Author:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Nupur Kulkarni, Syracuse University                  // 
+ //&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;nvkulkar@syr.edu                                     // 
+ // Source:      Jim Fawcett, CST 2-187, Syracuse University          // 
+ //              (315) 443-3948, jfawcett@twcny.rr.com                // 
+ /////////////////////////////////////////////////////////////////////// 
+  
+ #include "HTTPMessage.h" 
+ #include &lt;iostream&gt; 
+ #include &lt;string&gt; 
+ #include &lt;vector&gt; 
+ #include &lt;sstream&gt; 
+  
+ // -- copy constructor -- // 
+  
+ HTTPMessage::HTTPMessage(const HTTPMessage& message) 
+ {<button onClick = "OnClickDiv('div1', 'button1')" id = "button1">-</button><div id = "div1"> 
+ &nbsp;&nbsp;&nbsp;&nbsp;msg_ = message.msg_; 
+ &nbsp;&nbsp;&nbsp;&nbsp;command_ = message.command_; 
+ &nbsp;&nbsp;&nbsp;&nbsp;fromAddr_ = message.fromAddr_; 
+ &nbsp;&nbsp;&nbsp;&nbsp;toAddr_ = message.toAddr_; 
+ &nbsp;&nbsp;&nbsp;&nbsp;name_ = message.name_; 
+ &nbsp;&nbsp;&nbsp;&nbsp;content_ = message.content_; 
+ &nbsp;&nbsp;&nbsp;&nbsp;contentLength_ = message.contentLength_; 
+ &nbsp;&nbsp;&nbsp;&nbsp;body_.clear(); 
+ &nbsp;&nbsp;&nbsp;&nbsp;for (auto line : message.body_) 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;body_.push_back(line); 
+ } 
+</div><br>  
+ // -- assignment operator -- // 
+  
+ HTTPMessage& HTTPMessage::operator=(const HTTPMessage& message) 
+ {<button onClick = "OnClickDiv('div2', 'button2')" id = "button2">-</button><div id = "div2"> 
+ &nbsp;&nbsp;&nbsp;&nbsp;if (this == &message) 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;return *this; 
+ &nbsp;&nbsp;&nbsp;&nbsp;msg_ = message.msg_; 
+ &nbsp;&nbsp;&nbsp;&nbsp;command_ = message.command_; 
+ &nbsp;&nbsp;&nbsp;&nbsp;fromAddr_ = message.fromAddr_; 
+ &nbsp;&nbsp;&nbsp;&nbsp;toAddr_ = message.toAddr_; 
+ &nbsp;&nbsp;&nbsp;&nbsp;name_ = message.name_; 
+ &nbsp;&nbsp;&nbsp;&nbsp;content_ = message.content_; 
+ &nbsp;&nbsp;&nbsp;&nbsp;contentLength_ = message.contentLength_; 
+ &nbsp;&nbsp;&nbsp;&nbsp;body_.clear(); 
+ &nbsp;&nbsp;&nbsp;&nbsp;for (auto line : message.body_) 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;body_.push_back(line); 
+ &nbsp;&nbsp;&nbsp;&nbsp;return *this; 
+ } 
+</div><br>  
+ // -- returms a reference to the command field -- // 
+  
+ std::string& HTTPMessage::command() 
+ {<button onClick = "OnClickDiv('div3', 'button3')" id = "button3">-</button><div id = "div3"> 
+ &nbsp;&nbsp;&nbsp;&nbsp;return command_; 
+ } 
+</div><br>  
+ // -- returns a reference to the fromAddress field -- // 
+  
+ std::string& HTTPMessage::fromAddress() 
+ {<button onClick = "OnClickDiv('div4', 'button4')" id = "button4">-</button><div id = "div4"> 
+ &nbsp;&nbsp;&nbsp;&nbsp;return fromAddr_; 
+ } 
+</div><br>  
+ // -- returns a reference to the toAddress field -- // 
+  
+ std::string& HTTPMessage::toAddress() 
+ {<button onClick = "OnClickDiv('div5', 'button5')" id = "button5">-</button><div id = "div5"> 
+ &nbsp;&nbsp;&nbsp;&nbsp;return toAddr_; 
+ } 
+</div><br>  
+ // -- returns a reference to the name field -- // 
+  
+ std::string& HTTPMessage::name() 
+ {<button onClick = "OnClickDiv('div6', 'button6')" id = "button6">-</button><div id = "div6"> 
+ &nbsp;&nbsp;&nbsp;&nbsp;return name_; 
+ } 
+</div><br>  
+ // -- returns a reference to the content field -- // 
+  
+ std::string& HTTPMessage::content() 
+ {<button onClick = "OnClickDiv('div7', 'button7')" id = "button7">-</button><div id = "div7"> 
+ &nbsp;&nbsp;&nbsp;&nbsp;return content_; 
+ } 
+</div><br>  
+ // -- returns a reference to the contentLength field -- // 
+  
+ std::string& HTTPMessage::contentLength() 
+ {<button onClick = "OnClickDiv('div8', 'button8')" id = "button8">-</button><div id = "div8"> 
+ &nbsp;&nbsp;&nbsp;&nbsp;return contentLength_; 
+ } 
+</div><br>  
+ // -- swaps the to and from address fields of the message -- // 
+  
+ void HTTPMessage::swapAddresses() 
+ {<button onClick = "OnClickDiv('div9', 'button9')" id = "button9">-</button><div id = "div9"> 
+ &nbsp;&nbsp;&nbsp;&nbsp;std::string temp = fromAddr_; 
+ &nbsp;&nbsp;&nbsp;&nbsp;fromAddr_ = toAddr_; 
+ &nbsp;&nbsp;&nbsp;&nbsp;toAddr_ = temp; 
+ } 
+</div><br>  
+ // -- sets the contentLength to the specified integer value -- // 
+  
+ void HTTPMessage::setContentLength(int len) 
+ {<button onClick = "OnClickDiv('div10', 'button10')" id = "button10">-</button><div id = "div10"> 
+ &nbsp;&nbsp;&nbsp;&nbsp;contentLength_ = std::to_string(len); 
+ } 
+</div><br>  
+ // -- returns the contentLength field in unsigned int format -- // 
+  
+ size_t HTTPMessage::getContentLength() 
+ {<button onClick = "OnClickDiv('div11', 'button11')" id = "button11">-</button><div id = "div11"> 
+ &nbsp;&nbsp;&nbsp;&nbsp;return (size_t)std::stoi(contentLength_); 
+ } 
+</div><br>  
+ // -- returns the HTTPMessage as a std::string -- // 
+  
+ std::string HTTPMessage::buildMessage() 
+ {<button onClick = "OnClickDiv('div12', 'button12')" id = "button12">-</button><div id = "div12"> 
+ &nbsp;&nbsp;&nbsp;&nbsp;msg_ = command_ + "\n" + fromAddr_ + "\n" + toAddr_ + "\n" + name_ + "\n" + content_ + "\n" + contentLength_ + "\n" + "\n"; 
+ &nbsp;&nbsp;&nbsp;&nbsp;for (auto line : body_) 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;msg_ += line + "\n"; 
+ &nbsp;&nbsp;&nbsp;&nbsp;return msg_; 
+ } 
+</div><br>  
+ // -- sets the body to the specified vector of strings -- // 
+  
+ void HTTPMessage::setBody(std::vector&lt;std::string&gt; list) 
+ {<button onClick = "OnClickDiv('div13', 'button13')" id = "button13">-</button><div id = "div13"> 
+ &nbsp;&nbsp;&nbsp;&nbsp;body_.clear(); 
+ &nbsp;&nbsp;&nbsp;&nbsp;for (auto item : list) 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;body_.push_back(item); 
+ &nbsp;&nbsp;&nbsp;&nbsp;setContentLength((int)body_.size()); 
+ } 
+</div><br>  
+ // -- returns the body as a vector of strings -- // 
+  
+ std::vector&lt;std::string&gt; HTTPMessage::getBody() 
+ {<button onClick = "OnClickDiv('div14', 'button14')" id = "button14">-</button><div id = "div14"> 
+ &nbsp;&nbsp;&nbsp;&nbsp;return body_; 
+ } 
+</div><br>  
+ // -- parses a std::string into an HTTPMessage -- // 
+  
+ bool HTTPMessage::parseMessage(std::string msg) 
+ {<button onClick = "OnClickDiv('div15', 'button15')" id = "button15">-</button><div id = "div15"> 
+ &nbsp;&nbsp;&nbsp;&nbsp;std::stringstream msgStream_; 
+ &nbsp;&nbsp;&nbsp;&nbsp;msgStream_ << msg; 
+ &nbsp;&nbsp;&nbsp;&nbsp;msgStream_.seekg(0); 
+ &nbsp;&nbsp;&nbsp;&nbsp;try 
+<div id = "div16"> &nbsp;&nbsp;&nbsp;&nbsp;{ 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::string line; 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::getline(msgStream_, command_); 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::getline(msgStream_, fromAddr_); 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::getline(msgStream_, toAddr_); 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::getline(msgStream_, name_); 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::getline(msgStream_, content_); 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::getline(msgStream_, contentLength_); 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::getline(msgStream_, line); 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;for (size_t i = 0; i &lt; getContentLength(); i++) 
+<div id = "div17"> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{ 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;body_.push_back(""); 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::getline(msgStream_, body_[i]); 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;} 
+</div><br> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;return true; 
+ &nbsp;&nbsp;&nbsp;&nbsp;} 
+</div><br> &nbsp;&nbsp;&nbsp;&nbsp;catch (std::exception ex) 
+<div id = "div18"> &nbsp;&nbsp;&nbsp;&nbsp;{ 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::cout << "\n\n  Exception caught : " << ex.what() << "\n\n"; 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;return false; 
+ &nbsp;&nbsp;&nbsp;&nbsp;} 
+</div><br> } 
+</div><br>  
+ // -- Test Stub -- // 
+  
+ #ifdef TEST_HTTPMESSAGE 
+  
+ int main() 
+ {<button onClick = "OnClickDiv('div19', 'button19')" id = "button19">-</button><div id = "div19"> 
+ &nbsp;&nbsp;&nbsp;&nbsp;std::cout << "\n  Testing HTTPMessage package\n\n"; 
+ &nbsp;&nbsp;&nbsp;&nbsp;HTTPMessage msg; 
+ &nbsp;&nbsp;&nbsp;&nbsp;msg.command() = "check_in"; 
+ &nbsp;&nbsp;&nbsp;&nbsp;msg.fromAddress() = "[::1]:8051"; 
+ &nbsp;&nbsp;&nbsp;&nbsp;msg.toAddress() = "[::1]:8080"; 
+ &nbsp;&nbsp;&nbsp;&nbsp;msg.name() = "D:\\MS\\cert"; 
+ &nbsp;&nbsp;&nbsp;&nbsp;msg.content() = "dependencies"; 
+ &nbsp;&nbsp;&nbsp;&nbsp;std::vector&lt;std::string&gt; dependencies{ ".\\TestFile1.h", ".\\TestFile1.cpp", ".\\TestFile2.h", ".\\Testfile2.cpp" }; 
+ &nbsp;&nbsp;&nbsp;&nbsp;msg.setBody(dependencies); 
+ &nbsp;&nbsp;&nbsp;&nbsp;std::string recvdMsg = msg.buildMessage(); 
+ &nbsp;&nbsp;&nbsp;&nbsp;std::cout << "\n  Showing built message : \n\n"; 
+ &nbsp;&nbsp;&nbsp;&nbsp;std::cout << recvdMsg; 
+ &nbsp;&nbsp;&nbsp;&nbsp;HTTPMessage rMsg; 
+ &nbsp;&nbsp;&nbsp;&nbsp;rMsg.parseMessage(recvdMsg); 
+ &nbsp;&nbsp;&nbsp;&nbsp;std::cout << "\n  Showing parsed message : \n\n"; 
+ &nbsp;&nbsp;&nbsp;&nbsp;std::cout << rMsg.command() + "\n" << rMsg.fromAddress() + "\n" << rMsg.toAddress() + "\n" 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<< rMsg.name() + "\n" << rMsg.content() + "\n" << rMsg.contentLength() + "\n" << "\n"; 
+ &nbsp;&nbsp;&nbsp;&nbsp;std::vector&lt;std::string&gt; msgBody = rMsg.getBody(); 
+ &nbsp;&nbsp;&nbsp;&nbsp;for (auto line : msgBody) 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::cout << line + "\n"; 
+ &nbsp;&nbsp;&nbsp;&nbsp;std::cout << "\n\n  Done testing\n\n"; 
+ &nbsp;&nbsp;&nbsp;&nbsp;return 0; 
+ } 
+</div><br>  
+ #endif 
+
+</pre>
+</body>
+</html>

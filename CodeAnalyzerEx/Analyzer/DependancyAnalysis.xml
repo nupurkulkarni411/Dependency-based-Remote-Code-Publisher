@@ -1,0 +1,156 @@
+
+  <project>
+    <key>
+      AbstrSynTree.h
+    </key>
+    <name>
+      AbstrSynTree.h
+    </name>
+    <category>
+      Dependancy Analysis
+    </category>
+    <description>
+      Node is AbstrSynTree.h which depends on children of node.
+    </description>
+    <timedate>
+      2017-3-13 21:44:41
+    </timedate>
+    <children>
+      AbstrSynTree.cpp
+    </children>
+    <data>
+      Performing Dependancy Analysis
+    </data>
+    <key>
+      DepAnal.h
+    </key>
+    <name>
+      DepAnal.h
+    </name>
+    <category>
+      Dependancy Analysis
+    </category>
+    <description>
+      Node is DepAnal.h which depends on children of node.
+    </description>
+    <timedate>
+      2017-3-13 21:44:41
+    </timedate>
+    <children>
+      DepAnal.cpp
+      AbstrSynTree.cpp
+      StrongComponents.cpp
+    </children>
+    <data>
+      Performing Dependancy Analysis
+    </data>
+    <key>
+      StrongComponents.h
+    </key>
+    <name>
+      StrongComponents.h
+    </name>
+    <category>
+      Dependancy Analysis
+    </category>
+    <description>
+      Node is StrongComponents.h which depends on children of node.
+    </description>
+    <timedate>
+      2017-3-13 21:44:41
+    </timedate>
+    <children>
+      AbstrSynTree.cpp
+      StrongComponents.cpp
+    </children>
+    <data>
+      Performing Dependancy Analysis
+    </data>
+    <key>
+      AbstrSynTree.cpp
+    </key>
+    <name>
+      AbstrSynTree.cpp
+    </name>
+    <category>
+      Dependancy Analysis
+    </category>
+    <description>
+      Node is AbstrSynTree.cpp which depends on children of node.
+    </description>
+    <timedate>
+      2017-3-13 21:44:41
+    </timedate>
+    <children>
+      AbstrSynTree.h
+    </children>
+    <data>
+      Performing Dependancy Analysis
+    </data>
+    <key>
+      Typedefchk.cpp
+    </key>
+    <name>
+      Typedefchk.cpp
+    </name>
+    <category>
+      Dependancy Analysis
+    </category>
+    <description>
+      Node is Typedefchk.cpp which depends on children of node.
+    </description>
+    <timedate>
+      2017-3-13 21:44:41
+    </timedate>
+    <children>
+      NULL
+    </children>
+    <data>
+      Performing Dependancy Analysis
+    </data>
+    <key>
+      DepAnal.cpp
+    </key>
+    <name>
+      DepAnal.cpp
+    </name>
+    <category>
+      Dependancy Analysis
+    </category>
+    <description>
+      Node is DepAnal.cpp which depends on children of node.
+    </description>
+    <timedate>
+      2017-3-13 21:44:41
+    </timedate>
+    <children>
+      DepAnal.h
+      StrongComponents.cpp
+      AbstrSynTree.cpp
+    </children>
+    <data>
+      Performing Dependancy Analysis
+    </data>
+    <key>
+      StrongComponents.cpp
+    </key>
+    <name>
+      StrongComponents.cpp
+    </name>
+    <category>
+      Dependancy Analysis
+    </category>
+    <description>
+      Node is StrongComponents.cpp which depends on children of node.
+    </description>
+    <timedate>
+      2017-3-13 21:44:41
+    </timedate>
+    <children>
+      StrongComponents.h
+      AbstrSynTree.cpp
+    </children>
+    <data>
+      Performing Dependancy Analysis
+    </data>
+  </project>

@@ -1,0 +1,40 @@
+
+                                             CodeAnalysis
+    ==============================================================================================
+     Tue Apr  4 23:23:10 2017
+     Path: "C:\Users\lenovo\Desktop\ood check\CodeAnalyzerEx\Graph"
+     Args: Graph.cpp, /m, /r, /f
+                                                                               
+           Code Metrics - Start Line, Size (lines/code), and Complexity (number of scopes)
+    ==============================================================================================
+
+                 file name        type                               name    line    size    cplx
+    -----------------------  ----------  ---------------------------------  ------  ------  ------
+                             namespace                   Global Namespace       1       1       9
+              public data: typedef Graph < std :: string , std :: string > graph ; 
+              public data: typedef Vertex < std :: string , std :: string > vertex ; 
+              public data: typedef Display < std :: string , std :: string > display ; 
+
+                 file name        type                               name    line    size    cplx
+    -----------------------  ----------  ---------------------------------  ------  ------  ------
+                 Graph.cpp    function                           showVert      36       3       1
+                 Graph.cpp    function                          TshowVert      42       3       1
+                 Graph.cpp    function                               main      49      49       6
+                 Graph.cpp       class                        showFunctor      79       6       2
+                 Graph.cpp    function                         operator()      81       3       1
+
+                          Functions Exceeding Metric Limits and Public Data
+    ==============================================================================================
+                 file name        type                               name    line    size    cplx
+    -----------------------  ----------  ---------------------------------  ------  ------  ------
+
+              public data: Graph.cpp : 31 - namespace Global Namespace
+                typedef Graph < std :: string , std :: string > graph ; 
+              public data: Graph.cpp : 32 - namespace Global Namespace
+                typedef Vertex < std :: string , std :: string > vertex ; 
+              public data: Graph.cpp : 33 - namespace Global Namespace
+                typedef Display < std :: string , std :: string > display ; 
+
+
+    searched     3 dirs
+   processed     1 files

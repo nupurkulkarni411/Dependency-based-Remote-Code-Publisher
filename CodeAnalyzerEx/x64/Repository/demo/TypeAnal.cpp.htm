@@ -1,0 +1,156 @@
+<!----------------------------------------------------------------------------
+TypeAnal.cpp.htm - Generated HTML file of Project #3
+Published 04 April 2017
+Nupur Kulkarni, CSE687 - Object Oriented Design, Spring 2017
+
+Note:
+- Markup characters in the text part, enclosed in <pre>...</pre> have been 
+  replaced with escape sequences, e.g., < becomes &lt; and > becomes &gt;
+----------------------------------------------------------------------------->
+<html>
+<head>
+<link rel = stylesheet href = CSSFile.css>
+<script src= JSFile.js></script>
+</head>
+<body>
+<h3>TypeAnal.cpp</h3>
+<hr />
+<div class=indent><h4>Dependencies:</h4><p><a href = TypeAnal.h.htm> TypeAnal.h</a></p></div>
+<hr />
+<pre>
+ /////////////////////////////////////////////////////////////////////// 
+ // TypeAnal.cpp - this is responsible for type analysis and          // 
+ //                storing type analysis to type table.               // 
+ // ver 3.3                                                           // 
+ // Language:    C++, Visual Studio 2015                              // 
+ // Application: Type-based Dependency Analysis,                      // 
+ //              CSE687 - Object Oriented Design                      // 
+ // Author:      Nupur Kulkarni, Syracuse University,                 // 
+ //              nvkulkar@syr.edu                                     // 
+ // Source:      Jim Fawcett, Syracuse University, CST 4-187          // 
+ //              jfawcett@twcny.rr.com                                // 
+ /////////////////////////////////////////////////////////////////////// 
+ /* 
+  
+ * Build Process: 
+ * -------------- 
+ * Required Files: TypeAnal.h 
+ * 
+ * Maintenance History: 
+ * -------------------- 
+ * ver 1.0 : 01 March 2017 
+ * - first release of new design 
+ */ 
+  
+  
+ #include "TypeAnal.h" 
+  
+ using namespace CodeAnalysis; 
+  
+ //constructor 
+ TypeAnal::TypeAnal() : 
+ &nbsp;&nbsp;&nbsp;&nbsp;ASTref_(Repository::getInstance()-&gt;AST()), 
+ &nbsp;&nbsp;&nbsp;&nbsp;scopeStack_(Repository::getInstance()-&gt;scopeStack()), 
+ &nbsp;&nbsp;&nbsp;&nbsp;toker_(*(Repository::getInstance()-&gt;Toker())), 
+ &nbsp;&nbsp;&nbsp;&nbsp;typeTable_(Repository::getInstance()-&gt;typeTable()) 
+<div id = "div1"> { 
+ &nbsp;&nbsp;&nbsp;&nbsp;std::function&lt;void()&gt; test = [] { int x; }; 
+ } 
+</div><br>  
+  
+ //Traverse the AST in depth first search manner. 
+ void TypeAnal::DFS(ASTNode* pNode) 
+ {<button onClick = "OnClickDiv('div2', 'button2')" id = "button2">-</button><div id = "div2"> 
+ &nbsp;&nbsp;&nbsp;&nbsp;static std::string path = ""; 
+<div id = "div3"> &nbsp;&nbsp;&nbsp;&nbsp;if (pNode-&gt;path_ != path) { 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::cout << "\n    -- " << pNode-&gt;path_ << "\\" << pNode-&gt;package_; 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;path = pNode-&gt;path_; 
+ &nbsp;&nbsp;&nbsp;&nbsp;} 
+</div><br><div id = "div4"> &nbsp;&nbsp;&nbsp;&nbsp;if (doDisplay(pNode)) { 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::cout << "\n  " << pNode-&gt;name_; 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::cout << ", " << pNode-&gt;type_; 
+ &nbsp;&nbsp;&nbsp;&nbsp;} 
+</div><br> &nbsp;&nbsp;&nbsp;&nbsp;for (auto pChild : pNode-&gt;children_) 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;DFS(pChild); 
+ } 
+</div><br>  
+ //perform type analysis  
+ void TypeAnal::doTypeAnal() 
+ {<button onClick = "OnClickDiv('div5', 'button5')" id = "button5">-</button><div id = "div5"> 
+ &nbsp;&nbsp;&nbsp;&nbsp;std::cout << "\n  starting type analysis:\n"; 
+ &nbsp;&nbsp;&nbsp;&nbsp;std::cout << "\n  scanning AST and displaying important things:"; 
+ &nbsp;&nbsp;&nbsp;&nbsp;std::cout << "\n -----------------------------------------------"; 
+ &nbsp;&nbsp;&nbsp;&nbsp;ASTNode* pRoot = ASTref_.root(); 
+ &nbsp;&nbsp;&nbsp;&nbsp;DFS(pRoot); 
+ &nbsp;&nbsp;&nbsp;&nbsp;createTypeTable(pRoot); 
+ &nbsp;&nbsp;&nbsp;&nbsp;std::string ttoutput = d.displayTypeTable(typeTable_.getTypeTable()); 
+ &nbsp;&nbsp;&nbsp;&nbsp;displayTypeTable(ttoutput); 
+ } 
+</div><br>  
+ //storing result of analysis into type table. 
+ void TypeAnal::createTypeTable(ASTNode * pRoot) 
+ {<button onClick = "OnClickDiv('div6', 'button6')" id = "button6">-</button><div id = "div6"> 
+<div id = "div7"> &nbsp;&nbsp;&nbsp;&nbsp;for (ASTNode* node : pRoot-&gt;children_) { 
+<div id = "div8"> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if (node-&gt;children_.size() &gt; 0) { 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;createTypeTable(node); 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;} 
+</div><br> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TypeTableEntry entry; 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;entry.filepath = node-&gt;path_;//path of file in which token is present 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;entry.filepackage = node-&gt;package_; //package of file in which token is present 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;entry.tname = node-&gt;type_; //token type 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if (entry.tname == "struct" || entry.tname == "class" || entry.tname == "enum" || entry.tname == "alias" 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|| entry.tname == "typedef" || entry.tname == "using") 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{<button onClick = "OnClickDiv('div9', 'button9')" id = "button9">-</button><div id = "div9"> 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;typeTable_.makeTypeTableEntry(node-&gt;name_, entry); 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;} 
+</div><br> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if (entry.tname == "function" && (node-&gt;parentType_ == "class" 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|| node-&gt;parentType_ == "struct" || node-&gt;parentType_ == "enum" || node-&gt;parentType_ == "typedef")) 
+<div id = "div10"> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{ 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;typeTable_.makeTypeTableEntry(node-&gt;name_, entry); 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;} 
+</div><br> &nbsp;&nbsp;&nbsp;&nbsp;} 
+</div><br> &nbsp;&nbsp;&nbsp;&nbsp;extractGlobalFunctions(Repository::getInstance()-&gt;getGlobalScope()); 
+ } 
+</div><br>  
+ //display type table on console. 
+ void TypeAnal::displayTypeTable(std::string ttout) 
+ {<button onClick = "OnClickDiv('div11', 'button11')" id = "button11">-</button><div id = "div11"> 
+ &nbsp;&nbsp;&nbsp;&nbsp;std::cout << ttout; 
+ } 
+</div><br>  
+ //to extract global scope 
+ void TypeAnal::extractGlobalFunctions(ASTNode * globalNode) 
+ {<button onClick = "OnClickDiv('div12', 'button12')" id = "button12">-</button><div id = "div12"> 
+  
+<div id = "div13"> &nbsp;&nbsp;&nbsp;&nbsp;for (auto node : globalNode-&gt;children_) { 
+<div id = "div14"> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if (node-&gt;children_.size() &gt; 0) { 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;extractGlobalFunctions(node); 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;} 
+</div><br> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TypeTableEntry entry; 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;entry.filepath = node-&gt;path_; 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;entry.filepackage = node-&gt;package_; 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;entry.tname = "global "; entry.tname.append(node-&gt;type_); 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if (node-&gt;type_ == "function" && node-&gt;name_ != "main" && node-&gt;parentType_ != "class" 
+<div id = "div15"> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&& node-&gt;parentType_ != "struct" && node-&gt;parentType_ != "enum" && node-&gt;parentType_ != "typedef") { 
+  
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;typeTable_.makeTypeTableEntry(node-&gt;name_, entry); 
+  
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;} 
+</div><br> &nbsp;&nbsp;&nbsp;&nbsp;} 
+</div><br> } 
+</div><br>  
+ #ifdef TEST_TYPEANAL 
+  
+ int main() 
+<div id = "div16"> { 
+ &nbsp;&nbsp;&nbsp;&nbsp;//testing how type table is getting displayed 
+ &nbsp;&nbsp;&nbsp;&nbsp;std::string ttoutput = d.displayTypeTable(typeTable_.getTypeTable()); 
+ &nbsp;&nbsp;&nbsp;&nbsp;displayTypeTable(ttoutput); 
+ &nbsp;&nbsp;&nbsp;&nbsp;return 0; 
+ } 
+</div><br> #endif 
+  
+
+</pre>
+</body>
+</html>

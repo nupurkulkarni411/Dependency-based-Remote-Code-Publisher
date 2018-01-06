@@ -1,0 +1,55 @@
+
+                                             CodeAnalysis
+    ==============================================================================================
+     Wed May  3 23:53:45 2017
+     Path: "C:\Users\lenovo\Desktop\ood check\project4\CodeAnalyzerEx\CppCli-WPF-App"
+     Args: Window.cpp, /m, /r, /f
+                                                                               
+           Code Metrics - Start Line, Size (lines/code), and Complexity (number of scopes)
+    ==============================================================================================
+
+                 file name        type                               name    line    size    cplx
+    -----------------------  ----------  ---------------------------------  ------  ------  ------
+                             namespace                   Global Namespace       1       1      53
+
+                 file name        type                               name    line    size    cplx
+    -----------------------  ----------  ---------------------------------  ------  ------  ------
+                Window.cpp    function                          WPFClient      29      44       1
+                Window.cpp    function                         ~WPFClient      77       3       1
+                Window.cpp    function                     setUpStatusBar      84       6       1
+                Window.cpp    function                    setUpTabControl      94       7       1
+                Window.cpp    function           setPublishListProperties     105      13       1
+                Window.cpp    function               setButtonsProperties     122      50       1
+                Window.cpp    function                   setUpPublishView     176       8       1
+                Window.cpp    function                        toStdString     188       6       1
+                Window.cpp    function                         getPkgList     198      13       2
+                Window.cpp    function                        getFileList     215      18       2
+                Window.cpp    function                             Upload     237      42       7
+                Window.cpp    function                               each     264       3       1
+                Window.cpp    function                               each     271       3       1
+                Window.cpp    function                       fileDeletion     283      24       3
+                Window.cpp    function                        OpenWebPage     311      26       4
+                Window.cpp    function                     publishWithDep     341      27       4
+                Window.cpp    function                     toSystemString     372       6       1
+                Window.cpp    function                         addPackage     382      14       2
+                Window.cpp    function                           addFiles     400      14       2
+                Window.cpp    function                    updateStatusBar     418       3       1
+                Window.cpp    function                         getMessage     425      50       7
+                Window.cpp    function                  setUpUploadLabels     479      15       1
+                Window.cpp    function                   setUpUploadLists     498      19       1
+                Window.cpp    function                 setUpUploadButtons     521      32       1
+                Window.cpp    function                    setUpUploadView     557      33       1
+                Window.cpp    function                    browseForFolder     594      16       2
+                Window.cpp    function                           OnLoaded     614       3       1
+                Window.cpp    function                          Unloading     621       4       1
+                Window.cpp      lambda  [STAThread]intmain(array<System::     629       7       1
+
+                          Functions Exceeding Metric Limits and Public Data
+    ==============================================================================================
+                 file name        type                               name    line    size    cplx
+    -----------------------  ----------  ---------------------------------  ------  ------  ------
+
+
+
+    searched     3 dirs
+   processed     1 files

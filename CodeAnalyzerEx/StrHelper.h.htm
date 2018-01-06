@@ -1,0 +1,73 @@
+<!----------------------------------------------------------------------------
+StrHelper.h.htm - Generated HTML file of Project #3
+Published 04 April 2017
+Nupur Kulkarni, CSE687 - Object Oriented Design, Spring 2017
+
+Note:
+- Markup characters in the text part, enclosed in <pre>...</pre> have been 
+  replaced with escape sequences, e.g., < becomes &lt; and > becomes &gt;
+----------------------------------------------------------------------------->
+<html>
+<head>
+<link rel = stylesheet href = CSSFile.css>
+<script src= JSFile.js></script>
+</head>
+<body>
+<h3>StrHelper.h</h3>
+<hr />
+<div class=indent><h4>Dependencies:</h4></div>
+<hr />
+<pre>
+ #pragma once 
+ ///////////////////////////////////////////////////////////////////// 
+ // StrHelper.h - trim utilities for std::string                    // 
+ // ver 1.1                                                         // 
+ // Source: Evan Teran                                              // 
+ // Jim Fawcett, CSE687 - Object Oriented Design, Spring 2017       // 
+ ///////////////////////////////////////////////////////////////////// 
+ /* 
+  * Source from consultation with Dr. Google:  
+  * http://stackoverflow.com/questions/216823/whats-the-best-way-to-trim-stdstring 
+  * 
+  * Note: 
+  * - isspace(char), used below, fails with exception on certain non-ascii  
+  *   characters. For example, some of the Chinese characters will do that. 
+  * - To fix need to use isspace(char, std::locale). You can't directly 
+  *   do that with the code below, due to the way it's using std algorithms, 
+  *   but it's not too hard to do. 
+  * - For our purposes this should not cause a problem. 
+  * ToDo: 
+  * - convert to using isspace(char, std::locale) 
+  * - add cpp file with test stub and test. 
+  */ 
+ #include &lt;algorithm&gt;  
+ #include &lt;functional&gt;  
+ #include &lt;cctype&gt; 
+ #include &lt;locale&gt; 
+ #include &lt;string&gt; 
+  
+ // trim from start 
+ static inline std::string &ltrim(std::string &s) {<button onClick = "OnClickDiv('div1', 'button1')" id = "button1">-</button><div id = "div1"> 
+   s.erase(s.begin(), std::find_if(s.begin(), s.end(), 
+     std::not1(std::ptr_fun&lt;int, int&gt;(std::isspace)))); 
+   return s; 
+ } 
+</div><br>  
+ // trim from end 
+ static inline std::string &rtrim(std::string &s) {<button onClick = "OnClickDiv('div2', 'button2')" id = "button2">-</button><div id = "div2"> 
+   s.erase(std::find_if(s.rbegin(), s.rend(), 
+     std::not1(std::ptr_fun&lt;int, int&gt;(std::isspace))).base(), s.end()); 
+   return s; 
+ } 
+</div><br>  
+ // trim from both ends 
+ static inline std::string trim(std::string &s) {<button onClick = "OnClickDiv('div3', 'button3')" id = "button3">-</button><div id = "div3"> 
+    
+ &nbsp;&nbsp;&nbsp;&nbsp;try { return ltrim(rtrim(s)); } 
+   catch (...) { return std::string("trimming error"); } 
+ } 
+</div><br>  
+
+</pre>
+</body>
+</html>

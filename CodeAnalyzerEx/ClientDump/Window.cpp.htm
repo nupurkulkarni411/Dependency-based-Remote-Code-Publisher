@@ -1,0 +1,661 @@
+<!----------------------------------------------------------------------------
+Window.cpp.htm - Generated HTML file of Project #3
+Published 04 April 2017
+Nupur Kulkarni, CSE687 - Object Oriented Design, Spring 2017
+
+Note:
+- Markup characters in the text part, enclosed in <pre>...</pre> have been 
+  replaced with escape sequences, e.g., < becomes &lt; and > becomes &gt;
+----------------------------------------------------------------------------->
+<html>
+<head>
+<link rel = stylesheet href = CSSFile.css>
+<script src= JSFile.js></script>
+</head>
+<body>
+<h3>Window.cpp</h3>
+<hr />
+<div class=indent><h4>Dependencies:</h4><p><a href = Window.h.htm> Window.h</a></p><p><a href = MockChannel.h.htm> MockChannel.h</a></p><p><a href = MockChannel.cpp.htm> MockChannel.cpp</a></p><p><a href = Logger.cpp.htm> Logger.cpp</a></p><p><a href = Logger.h.htm> Logger.h</a></p><p><a href = MsgServer.cpp.htm> MsgServer.cpp</a></p><p><a href = HttpMessage.h.htm> HttpMessage.h</a></p><p><a href = HttpMessage.cpp.htm> HttpMessage.cpp</a></p><p><a href = Graph.h.htm> Graph.h</a></p><p><a href = SemiExp.cpp.htm> SemiExp.cpp</a></p><p><a href = Graph.cpp.htm> Graph.cpp</a></p><p><a href = ConvertToHtml.cpp.htm> ConvertToHtml.cpp</a></p><p><a href = TypeAnal.cpp.htm> TypeAnal.cpp</a></p></div>
+<hr />
+<pre>
+ /////////////////////////////////////////////////////////////////////// 
+ // Window.cpp - Provides a GUI client to interact with the remote&nbsp;&nbsp;&nbsp;&nbsp; // 
+ //&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;code publisher server&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; // 
+ // ver 1.0                                                           // 
+ // Language:    C++, Visual Studio 2015                              // 
+ // Platform:    Lenovo Ideapad 500, Windows 10, AMD A10 x64&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; // 
+ // Application: Remote Code Publisher, Project 4&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; // 
+ //              CSE687 - Object Oriented Design&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; // 
+ // Author:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Nupur Kulkarni, Syracuse University&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; // 
+ //&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;nvkulkar@syr.edu&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; // 
+ // Source:      Jim Fawcett, CST 2-187, Syracuse University&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;     // 
+ //              (315) 443-3948, jfawcett@twcny.rr.com&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; // 
+ /////////////////////////////////////////////////////////////////////// 
+ /* 
+ *  To run as a Windows Application: 
+ *  - Set Project Properties &gt; Linker &gt; System &gt; Subsystem to Windows 
+ *  - Comment out int main(...) at bottom 
+ *  - Uncomment int _stdcall WinMain() at bottom 
+ *  To run as a Console Application: 
+ *  - Set Project Properties &gt; Linker &gt; System &gt; Subsytem to Console 
+ *  - Uncomment int main(...) at bottom 
+ *  - Comment out int _stdcall WinMain() at bottom 
+ */ 
+ #include "Window.h" 
+ #include "../HTTPMessage/HTTPMessage.h" 
+ using namespace CppCliWindows; 
+  
+ WPFClient::WPFClient(array&lt;System::String^&gt;^ args) 
+ {<button onClick = "OnClickDiv('div1', 'button1')" id = "button1">-</button><div id = "div1"> 
+ &nbsp;&nbsp;&nbsp;&nbsp;//Initialization 
+ &nbsp;&nbsp;&nbsp;&nbsp;ClientPortNumber = args[0]; 
+ &nbsp;&nbsp;&nbsp;&nbsp;ServerPortNumber = args[1]; 
+ &nbsp;&nbsp;&nbsp;&nbsp;// set up channel 
+ &nbsp;&nbsp;&nbsp;&nbsp;ObjectFactory* pObjFact = new ObjectFactory; 
+ &nbsp;&nbsp;&nbsp;&nbsp;pChann_ = pObjFact-&gt;createMockChannel("localhost", std::stoi(toStdString(args[0]))); 
+ &nbsp;&nbsp;&nbsp;&nbsp;pChann_-&gt;start(); 
+ &nbsp;&nbsp;&nbsp;&nbsp;pChann_-&gt;connect("localhost", std::stoi(toStdString(args[1]))); 
+ &nbsp;&nbsp;&nbsp;&nbsp;delete pObjFact; 
+ &nbsp;&nbsp;&nbsp;&nbsp; 
+ &nbsp;&nbsp;&nbsp;&nbsp;// client's receive thread 
+ &nbsp;&nbsp;&nbsp;&nbsp;recvThread = gcnew Thread(gcnew ThreadStart(this, &WPFClient::getMessage)); 
+ &nbsp;&nbsp;&nbsp;&nbsp;recvThread-&gt;Start(); 
+ &nbsp;&nbsp;&nbsp;&nbsp;// set event handlers 
+ &nbsp;&nbsp;&nbsp;&nbsp;hDeleteButton-&gt;IsEnabled = false; 
+ &nbsp;&nbsp;&nbsp;&nbsp;hPublishWithDepButton-&gt;IsEnabled = false; 
+ &nbsp;&nbsp;&nbsp;&nbsp;hOpenWebPageButton-&gt;IsEnabled = false; 
+ &nbsp;&nbsp;&nbsp;&nbsp;this-&gt;Loaded += 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gcnew System::Windows::RoutedEventHandler(this, &WPFClient::OnLoaded); 
+ &nbsp;&nbsp;&nbsp;&nbsp;this-&gt;Closing += 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;gcnew CancelEventHandler(this, &WPFClient::Unloading); 
+ &nbsp;&nbsp;&nbsp;&nbsp;hGetPkgListButton-&gt;Click += gcnew RoutedEventHandler(this, &WPFClient::getFileList); 
+ &nbsp;&nbsp;&nbsp;&nbsp;hDeleteButton-&gt;Click += gcnew RoutedEventHandler(this, &WPFClient::fileDeletion); 
+ &nbsp;&nbsp;&nbsp;&nbsp;hOpenWebPageButton-&gt;Click += gcnew RoutedEventHandler(this, &WPFClient::OpenWebPage); 
+ &nbsp;&nbsp;&nbsp;&nbsp;hPublishWithDepButton-&gt;Click += gcnew RoutedEventHandler(this, &WPFClient::publishWithDep); 
+ &nbsp;&nbsp;&nbsp;&nbsp;hFolderBrowseButton-&gt;Click += gcnew RoutedEventHandler(this, &WPFClient::browseForFolder); 
+ &nbsp;&nbsp;&nbsp;&nbsp;hUploadGetFileListButton-&gt;Click += gcnew RoutedEventHandler(this, &WPFClient::getPkgList); 
+ &nbsp;&nbsp;&nbsp;&nbsp;hUploadButton-&gt;Click += gcnew RoutedEventHandler(this, &WPFClient::Upload); 
+ &nbsp;&nbsp;&nbsp;&nbsp;// set Window properties 
+ &nbsp;&nbsp;&nbsp;&nbsp;this-&gt;Title = "Client"; 
+ &nbsp;&nbsp;&nbsp;&nbsp;this-&gt;Width = 800; 
+ &nbsp;&nbsp;&nbsp;&nbsp;this-&gt;Height = 600; 
+ &nbsp;&nbsp;&nbsp;&nbsp;// attach dock panel to Window 
+ &nbsp;&nbsp;&nbsp;&nbsp;this-&gt;Content = hDockPanel; 
+ &nbsp;&nbsp;&nbsp;&nbsp;hDockPanel-&gt;Children-&gt;Add(hStatusBar); 
+ &nbsp;&nbsp;&nbsp;&nbsp;hDockPanel-&gt;SetDock(hStatusBar, Dock::Bottom); 
+ &nbsp;&nbsp;&nbsp;&nbsp;hDockPanel-&gt;Children-&gt;Add(hGrid); 
+ &nbsp;&nbsp;&nbsp;&nbsp;// setup Window controls and views 
+ &nbsp;&nbsp;&nbsp;&nbsp;setUpTabControl(); 
+ &nbsp;&nbsp;&nbsp;&nbsp;setUpStatusBar(); 
+ &nbsp;&nbsp;&nbsp;&nbsp;setUpPublishView(); 
+ &nbsp;&nbsp;&nbsp;&nbsp;setUpUploadView(); 
+ &nbsp;&nbsp;&nbsp;&nbsp;pChann_-&gt;manualExecution(toStdString(args[2])); 
+ } 
+</div><br>  
+ // -- destructor deletes memory allocated to the MockChannel pointer -- // 
+  
+ WPFClient::~WPFClient() 
+ {<button onClick = "OnClickDiv('div2', 'button2')" id = "button2">-</button><div id = "div2"> 
+ &nbsp;&nbsp;&nbsp;&nbsp;delete pChann_; 
+ } 
+</div><br>  
+ // -- sets up the status bar and docks it to the bottom of the window -- // 
+  
+ void WPFClient::setUpStatusBar() 
+ {<button onClick = "OnClickDiv('div3', 'button3')" id = "button3">-</button><div id = "div3"> 
+ &nbsp;&nbsp;&nbsp;&nbsp;hStatusBar-&gt;Items-&gt;Add(hStatusBarItem); 
+ &nbsp;&nbsp;&nbsp;&nbsp;hStatus-&gt;Text = "very important messages will appear here"; 
+ &nbsp;&nbsp;&nbsp;&nbsp;hStatusBarItem-&gt;Content = hStatus; 
+ &nbsp;&nbsp;&nbsp;&nbsp;hStatusBar-&gt;Padding = Thickness(10, 2, 10, 2); 
+ } 
+</div><br>  
+ // -- sets up the tab control by adding the upload and publish tabs -- // 
+  
+ void WPFClient::setUpTabControl() 
+ {<button onClick = "OnClickDiv('div4', 'button4')" id = "button4">-</button><div id = "div4"> 
+ &nbsp;&nbsp;&nbsp;&nbsp;hGrid-&gt;Children-&gt;Add(hTabControl); 
+ &nbsp;&nbsp;&nbsp;&nbsp;hUploadTab-&gt;Header = "Upload"; 
+ &nbsp;&nbsp;&nbsp;&nbsp;hPublishTab-&gt;Header = "Publish/Delete"; 
+ &nbsp;&nbsp;&nbsp;&nbsp;hTabControl-&gt;Items-&gt;Add(hUploadTab); 
+ &nbsp;&nbsp;&nbsp;&nbsp;hTabControl-&gt;Items-&gt;Add(hPublishTab); 
+ } 
+</div><br>  
+ //  -- set up the listbox to display packages in the publish view -- // 
+  
+ void WPFClient::setPublishListProperties() 
+ {<button onClick = "OnClickDiv('div5', 'button5')" id = "button5">-</button><div id = "div5"> 
+ &nbsp;&nbsp;&nbsp;&nbsp;RowDefinition^ hRow1Def = gcnew RowDefinition(); 
+ &nbsp;&nbsp;&nbsp;&nbsp;hPublishGrid-&gt;RowDefinitions-&gt;Add(hRow1Def); 
+ &nbsp;&nbsp;&nbsp;&nbsp;Border^ hBorder1 = gcnew Border(); 
+ &nbsp;&nbsp;&nbsp;&nbsp;hBorder1-&gt;BorderThickness = Thickness(1); 
+ &nbsp;&nbsp;&nbsp;&nbsp;hBorder1-&gt;BorderBrush = Brushes::Black; 
+ &nbsp;&nbsp;&nbsp;&nbsp;hBorder1-&gt;Child = hRepFileList; 
+ &nbsp;&nbsp;&nbsp;&nbsp;hRepFileList-&gt;Items-&gt;Add(""); 
+ &nbsp;&nbsp;&nbsp;&nbsp;hScrollViewer1-&gt;VerticalScrollBarVisibility = ScrollBarVisibility::Auto; 
+ &nbsp;&nbsp;&nbsp;&nbsp;hScrollViewer1-&gt;Content = hBorder1; 
+ &nbsp;&nbsp;&nbsp;&nbsp;hPublishGrid-&gt;SetRow(hScrollViewer1, 0); 
+ &nbsp;&nbsp;&nbsp;&nbsp;hPublishGrid-&gt;Children-&gt;Add(hScrollViewer1); 
+ } 
+</div><br>  
+ // -- setup the buttons in the publish view -- // 
+  
+ void WPFClient::setButtonsProperties() 
+ {<button onClick = "OnClickDiv('div6', 'button6')" id = "button6">-</button><div id = "div6"> 
+ &nbsp;&nbsp;&nbsp;&nbsp;RowDefinition^ hRow2Def = gcnew RowDefinition(); 
+ &nbsp;&nbsp;&nbsp;&nbsp;hRow2Def-&gt;Height = GridLength(75); 
+ &nbsp;&nbsp;&nbsp;&nbsp;hPublishGrid-&gt;RowDefinitions-&gt;Add(hRow2Def); 
+ &nbsp;&nbsp;&nbsp;&nbsp;hGetPkgListButton-&gt;Content = "Get Repository\n   Contents"; 
+ &nbsp;&nbsp;&nbsp;&nbsp;Border^ hBorder2 = gcnew Border(); 
+ &nbsp;&nbsp;&nbsp;&nbsp;hBorder2-&gt;Width = 120; 
+ &nbsp;&nbsp;&nbsp;&nbsp;hBorder2-&gt;Height = 50; 
+ &nbsp;&nbsp;&nbsp;&nbsp;hBorder2-&gt;BorderThickness = Thickness(1); 
+ &nbsp;&nbsp;&nbsp;&nbsp;hBorder2-&gt;BorderBrush = Brushes::Black; 
+ &nbsp;&nbsp;&nbsp;&nbsp;hDeleteButton-&gt;Content = "Delete File"; 
+ &nbsp;&nbsp;&nbsp;&nbsp;hBorder2-&gt;Child = hGetPkgListButton; 
+ &nbsp;&nbsp;&nbsp;&nbsp;Border^ hBorder3 = gcnew Border(); 
+ &nbsp;&nbsp;&nbsp;&nbsp;hBorder3-&gt;Width = 120; 
+ &nbsp;&nbsp;&nbsp;&nbsp;hBorder3-&gt;Height = 50; 
+ &nbsp;&nbsp;&nbsp;&nbsp;hBorder3-&gt;BorderThickness = Thickness(1); 
+ &nbsp;&nbsp;&nbsp;&nbsp;hBorder3-&gt;BorderBrush = Brushes::Black; 
+ &nbsp;&nbsp;&nbsp;&nbsp;hBorder3-&gt;Child = hDeleteButton; 
+ &nbsp;&nbsp;&nbsp;&nbsp;hStackPanel1-&gt;Children-&gt;Add(hBorder2); 
+ &nbsp;&nbsp;&nbsp;&nbsp;TextBlock^ hSpacer = gcnew TextBlock(); 
+ &nbsp;&nbsp;&nbsp;&nbsp;hSpacer-&gt;Width = 20; 
+ &nbsp;&nbsp;&nbsp;&nbsp;hStackPanel1-&gt;Children-&gt;Add(hSpacer); 
+ &nbsp;&nbsp;&nbsp;&nbsp;hStackPanel1-&gt;Children-&gt;Add(hBorder3); 
+ &nbsp;&nbsp;&nbsp;&nbsp;TextBlock^ hSpacer2 = gcnew TextBlock(); 
+ &nbsp;&nbsp;&nbsp;&nbsp;hSpacer2-&gt;Width = 20; 
+ &nbsp;&nbsp;&nbsp;&nbsp;hStackPanel1-&gt;Children-&gt;Add(hSpacer2); 
+ &nbsp;&nbsp;&nbsp;&nbsp;Border^ hBorder4 = gcnew Border(); 
+ &nbsp;&nbsp;&nbsp;&nbsp;hBorder4-&gt;Width = 120; 
+ &nbsp;&nbsp;&nbsp;&nbsp;hBorder4-&gt;Height = 50; 
+ &nbsp;&nbsp;&nbsp;&nbsp;hBorder4-&gt;BorderThickness = Thickness(1); 
+ &nbsp;&nbsp;&nbsp;&nbsp;hBorder4-&gt;BorderBrush = Brushes::Black; 
+ &nbsp;&nbsp;&nbsp;&nbsp;hPublishWithDepButton-&gt;Content = "Publish"; 
+ &nbsp;&nbsp;&nbsp;&nbsp;hBorder4-&gt;Child = hPublishWithDepButton; 
+ &nbsp;&nbsp;&nbsp;&nbsp;hStackPanel1-&gt;Children-&gt;Add(hBorder4); 
+ &nbsp;&nbsp;&nbsp;&nbsp;TextBlock^ hSpacer3 = gcnew TextBlock(); 
+ &nbsp;&nbsp;&nbsp;&nbsp;hSpacer3-&gt;Width = 20; 
+ &nbsp;&nbsp;&nbsp;&nbsp;hStackPanel1-&gt;Children-&gt;Add(hSpacer3); 
+ &nbsp;&nbsp;&nbsp;&nbsp;Border^ hBorder5 = gcnew Border(); 
+ &nbsp;&nbsp;&nbsp;&nbsp;hBorder5-&gt;Width = 120; 
+ &nbsp;&nbsp;&nbsp;&nbsp;hBorder5-&gt;Height = 50; 
+ &nbsp;&nbsp;&nbsp;&nbsp;hBorder5-&gt;BorderThickness = Thickness(1); 
+ &nbsp;&nbsp;&nbsp;&nbsp;hBorder5-&gt;BorderBrush = Brushes::Black; 
+ &nbsp;&nbsp;&nbsp;&nbsp;hOpenWebPageButton-&gt;Content = "Open Web Page"; 
+ &nbsp;&nbsp;&nbsp;&nbsp;hBorder5-&gt;Child = hOpenWebPageButton; 
+ &nbsp;&nbsp;&nbsp;&nbsp;hStackPanel1-&gt;Children-&gt;Add(hBorder5); 
+ &nbsp;&nbsp;&nbsp;&nbsp;hStackPanel1-&gt;Orientation = Orientation::Horizontal; 
+ &nbsp;&nbsp;&nbsp;&nbsp;hStackPanel1-&gt;HorizontalAlignment = System::Windows::HorizontalAlignment::Center; 
+ &nbsp;&nbsp;&nbsp;&nbsp;hPublishGrid-&gt;SetRow(hStackPanel1, 1); 
+ &nbsp;&nbsp;&nbsp;&nbsp;hPublishGrid-&gt;Children-&gt;Add(hStackPanel1); 
+ } 
+</div><br>  
+ // -- setup the publish tab view and its controls -- // 
+  
+ void WPFClient::setUpPublishView() 
+ {<button onClick = "OnClickDiv('div7', 'button7')" id = "button7">-</button><div id = "div7"> 
+ &nbsp;&nbsp;&nbsp;&nbsp;Console::Write("\n  setting up publish view"); 
+ &nbsp;&nbsp;&nbsp;&nbsp;hPublishGrid-&gt;Margin = Thickness(20); 
+ &nbsp;&nbsp;&nbsp;&nbsp;hPublishTab-&gt;Content = hPublishGrid; 
+  
+ &nbsp;&nbsp;&nbsp;&nbsp;setPublishListProperties(); 
+ &nbsp;&nbsp;&nbsp;&nbsp;setButtonsProperties(); 
+ } 
+</div><br>  
+ // -- accepts a System::String^ and returns it as a std::string -- // 
+  
+ std::string WPFClient::toStdString(String^ pStr) 
+ {<button onClick = "OnClickDiv('div8', 'button8')" id = "button8">-</button><div id = "div8"> 
+ &nbsp;&nbsp;&nbsp;&nbsp;std::string dst; 
+ &nbsp;&nbsp;&nbsp;&nbsp;for (int i = 0; i &lt; pStr-&gt;Length; ++i) 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;dst += (char)pStr[i]; 
+ &nbsp;&nbsp;&nbsp;&nbsp;return dst; 
+ } 
+</div><br>  
+ // -- function that frames an HTTPMessage for requesting the package list and posts it to the MockChannel for sending -- // 
+  
+ void WPFClient::getPkgList(Object^ obj, RoutedEventArgs^ args) 
+ {<button onClick = "OnClickDiv('div9', 'button9')" id = "button9">-</button><div id = "div9"> 
+ &nbsp;&nbsp;&nbsp;&nbsp;Console::Write("\n  sending package list request"); 
+ &nbsp;&nbsp;&nbsp;&nbsp;HTTPMessage msg; 
+ &nbsp;&nbsp;&nbsp;&nbsp;msg.command() = "get_package_list"; 
+ &nbsp;&nbsp;&nbsp;&nbsp;msg.fromAddress() = "[localhost]:" + toStdString(ClientPortNumber); 
+ &nbsp;&nbsp;&nbsp;&nbsp;msg.toAddress() = ("[localhost]:" + toStdString(ServerPortNumber)); 
+ &nbsp;&nbsp;&nbsp;&nbsp;msg.name() = "empty"; 
+ &nbsp;&nbsp;&nbsp;&nbsp;msg.content() = "no_content"; 
+ &nbsp;&nbsp;&nbsp;&nbsp;std::vector&lt;std::string&gt; vec = {}; 
+ &nbsp;&nbsp;&nbsp;&nbsp;msg.setBody(vec); 
+ &nbsp;&nbsp;&nbsp;&nbsp;pChann_-&gt;postMessage(msg.buildMessage()); 
+ &nbsp;&nbsp;&nbsp;&nbsp;hStatus-&gt;Text = "Sent Package List Request"; 
+ } 
+</div><br>  
+ // -- function that frames an HTTPMessage for requesting the file list and posts it to the MockChannel for sending -- // 
+  
+ void CppCliWindows::WPFClient::getFileList(Object ^ obj, RoutedEventArgs ^ args) 
+ {<button onClick = "OnClickDiv('div10', 'button10')" id = "button10">-</button><div id = "div10"> 
+ &nbsp;&nbsp;&nbsp;&nbsp;Console::Write("\n  Requirement 5: Provided view Repository contents \n"); 
+ &nbsp;&nbsp;&nbsp;&nbsp;Console::Write("  as per described in purpose section.\n"); 
+ &nbsp;&nbsp;&nbsp;&nbsp;Console::Write("\n  sending file list request"); 
+ &nbsp;&nbsp;&nbsp;&nbsp;HTTPMessage msg; 
+ &nbsp;&nbsp;&nbsp;&nbsp;msg.command() = "get_file_list"; 
+ &nbsp;&nbsp;&nbsp;&nbsp;msg.fromAddress() = "[localhost]:" + toStdString(ClientPortNumber); 
+ &nbsp;&nbsp;&nbsp;&nbsp;msg.toAddress() = ("[localhost]:" + toStdString(ServerPortNumber)); 
+ &nbsp;&nbsp;&nbsp;&nbsp;msg.name() = "empty"; 
+ &nbsp;&nbsp;&nbsp;&nbsp;msg.content() = "no_content"; 
+ &nbsp;&nbsp;&nbsp;&nbsp;std::vector&lt;std::string&gt; vec = {}; 
+ &nbsp;&nbsp;&nbsp;&nbsp;msg.setBody(vec); 
+ &nbsp;&nbsp;&nbsp;&nbsp;pChann_-&gt;postMessage(msg.buildMessage()); 
+ &nbsp;&nbsp;&nbsp;&nbsp;hStatus-&gt;Text = "Sent File List Request"; 
+ &nbsp;&nbsp;&nbsp;&nbsp;hDeleteButton-&gt;IsEnabled = true; 
+ &nbsp;&nbsp;&nbsp;&nbsp;hPublishWithDepButton-&gt;IsEnabled = true; 
+ &nbsp;&nbsp;&nbsp;&nbsp;hOpenWebPageButton-&gt;IsEnabled = true; 
+ } 
+</div><br>  
+ // -- function that frames an HTTPMessage for requesting file/files upload and posts it to the MockChannel for sending -- // 
+  
+ void WPFClient::Upload(Object^ obj, RoutedEventArgs^ args) 
+ {<button onClick = "OnClickDiv('div11', 'button11')" id = "button11">-</button><div id = "div11"> 
+ &nbsp;&nbsp;&nbsp;&nbsp;if (hUploadList-&gt;SelectedItem == nullptr) 
+<div id = "div12"> &nbsp;&nbsp;&nbsp;&nbsp;{ 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;hStatus-&gt;Text = "Please select a file"; 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;return; 
+ &nbsp;&nbsp;&nbsp;&nbsp;} 
+</div><br> &nbsp;&nbsp;&nbsp;&nbsp;Console::Write("\n  Requirement 5: Provided a Client program that can upload files\n"); 
+ &nbsp;&nbsp;&nbsp;&nbsp;Console::Write("  User can selcect one or multiple files to upload in the repository.\n"); 
+ &nbsp;&nbsp;&nbsp;&nbsp;Console::Write("  Uploaded files can be seen in repository folder under selected category.\n"); 
+ &nbsp;&nbsp;&nbsp;&nbsp;Console::Write("\n  sending upload request"); 
+ &nbsp;&nbsp;&nbsp;&nbsp;hStatus-&gt;Text = "Sending upload Request"; 
+ &nbsp;&nbsp;&nbsp;&nbsp;HTTPMessage msg; 
+ &nbsp;&nbsp;&nbsp;&nbsp;msg.command() = "upload"; 
+ &nbsp;&nbsp;&nbsp;&nbsp;msg.fromAddress() = "[localhost]:" + toStdString(ClientPortNumber); 
+ &nbsp;&nbsp;&nbsp;&nbsp;msg.toAddress() = ("[localhost]:" + toStdString(ServerPortNumber)); 
+ &nbsp;&nbsp;&nbsp;&nbsp;if (hCategoriesList-&gt;SelectedItem == nullptr) 
+<div id = "div13"> &nbsp;&nbsp;&nbsp;&nbsp;{ 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;hStatus-&gt;Text = "Please select a category"; 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;return; 
+ &nbsp;&nbsp;&nbsp;&nbsp;} 
+</div><br> &nbsp;&nbsp;&nbsp;&nbsp;msg.name() = toStdString(hCategoriesList-&gt;SelectedItem-&gt;ToString()); 
+ &nbsp;&nbsp;&nbsp;&nbsp;msg.content() = std::to_string(1); 
+ &nbsp;&nbsp;&nbsp;&nbsp;int index = 0; 
+ &nbsp;&nbsp;&nbsp;&nbsp;int count = hUploadList-&gt;SelectedItems-&gt;Count; 
+ &nbsp;&nbsp;&nbsp;&nbsp;array&lt;System::String^&gt;^ items = gcnew array&lt;String^&gt;(count); 
+<div id = "div14"> &nbsp;&nbsp;&nbsp;&nbsp;if (count &gt; 0) { 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;for each (String^ item in hUploadList-&gt;SelectedItems) 
+<div id = "div15"> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{ 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;items[index++] = item; 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;} 
+</div><br> &nbsp;&nbsp;&nbsp;&nbsp;} 
+</div><br> &nbsp;&nbsp;&nbsp;&nbsp;std::vector&lt;std::string&gt; dep; 
+<div id = "div16"> &nbsp;&nbsp;&nbsp;&nbsp;if (count &gt; 0) { 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;for each (String^ item in items) 
+<div id = "div17"> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{ 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;dep.push_back(toStdString(item)); 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;} 
+</div><br> &nbsp;&nbsp;&nbsp;&nbsp;} 
+</div><br> &nbsp;&nbsp;&nbsp;&nbsp;msg.setBody(dep); 
+ &nbsp;&nbsp;&nbsp;&nbsp;msg.setContentLength(count); 
+ &nbsp;&nbsp;&nbsp;&nbsp;pChann_-&gt;postMessage(msg.buildMessage()); 
+ } 
+</div><br>  
+ // -- function that frames an HTTPMessage for deleting a file in repository -- // 
+  
+ void WPFClient::fileDeletion(Object^ sender, RoutedEventArgs^ args) 
+ {<button onClick = "OnClickDiv('div18', 'button18')" id = "button18">-</button><div id = "div18"> 
+ &nbsp;&nbsp;&nbsp;&nbsp;if (hRepFileList-&gt;SelectedItem == nullptr) 
+<div id = "div19"> &nbsp;&nbsp;&nbsp;&nbsp;{ 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;hStatus-&gt;Text = "Please select a file"; 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;return; 
+ &nbsp;&nbsp;&nbsp;&nbsp;} 
+</div><br> &nbsp;&nbsp;&nbsp;&nbsp;Console::Write("\n  sending deletion request"); 
+ &nbsp;&nbsp;&nbsp;&nbsp;hStatus-&gt;Text = "Sending deletion Request"; 
+ &nbsp;&nbsp;&nbsp;&nbsp;HTTPMessage msg; 
+ &nbsp;&nbsp;&nbsp;&nbsp;msg.command() = "delete_file"; 
+ &nbsp;&nbsp;&nbsp;&nbsp;msg.fromAddress() = "[localhost]:" + toStdString(ClientPortNumber); 
+ &nbsp;&nbsp;&nbsp;&nbsp;msg.toAddress() = ("[localhost]:" + toStdString(ServerPortNumber)); 
+ &nbsp;&nbsp;&nbsp;&nbsp;std::string selection = toStdString(hRepFileList-&gt;SelectedItem-&gt;ToString()); 
+ &nbsp;&nbsp;&nbsp;&nbsp;if (selection.find("*") != std::string::npos) 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;selection = selection.substr(1); 
+ &nbsp;&nbsp;&nbsp;&nbsp;msg.name() = selection; 
+ &nbsp;&nbsp;&nbsp;&nbsp;msg.content() = "no_content"; 
+ &nbsp;&nbsp;&nbsp;&nbsp;std::vector&lt;std::string&gt; vec = {}; 
+ &nbsp;&nbsp;&nbsp;&nbsp;msg.setBody(vec); 
+ &nbsp;&nbsp;&nbsp;&nbsp;pChann_-&gt;postMessage(msg.buildMessage()); 
+ &nbsp;&nbsp;&nbsp;&nbsp;hDeleteButton-&gt;IsEnabled = false; 
+ &nbsp;&nbsp;&nbsp;&nbsp;hPublishWithDepButton-&gt;IsEnabled = false; 
+ &nbsp;&nbsp;&nbsp;&nbsp;hOpenWebPageButton-&gt;IsEnabled = false; 
+ } 
+</div><br>  
+ // -- function that frames an HTTPMessage for deleting a file in repository -- // 
+  
+ void CppCliWindows::WPFClient::OpenWebPage(Object ^ sender, RoutedEventArgs ^ args) 
+ {<button onClick = "OnClickDiv('div20', 'button20')" id = "button20">-</button><div id = "div20"> 
+ &nbsp;&nbsp;&nbsp;&nbsp;if (hRepFileList-&gt;SelectedItem == nullptr) 
+<div id = "div21"> &nbsp;&nbsp;&nbsp;&nbsp;{ 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;hStatus-&gt;Text = "Please select a file"; 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;return; 
+ &nbsp;&nbsp;&nbsp;&nbsp;} 
+</div><br> &nbsp;&nbsp;&nbsp;&nbsp;if (toStdString(hRepFileList-&gt;SelectedItem-&gt;ToString()).find(".htm") == std::string::npos) 
+<div id = "div22"> &nbsp;&nbsp;&nbsp;&nbsp;{ 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;hStatus-&gt;Text = "Please click on Publish button"; 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;return; 
+ &nbsp;&nbsp;&nbsp;&nbsp;} 
+</div><br> &nbsp;&nbsp;&nbsp;&nbsp;Console::Write("\n  sending request for opening requested web page"); 
+ &nbsp;&nbsp;&nbsp;&nbsp;hStatus-&gt;Text = "Sending open web page Request"; 
+ &nbsp;&nbsp;&nbsp;&nbsp;HTTPMessage msg; 
+ &nbsp;&nbsp;&nbsp;&nbsp;msg.command() = "open_web_page"; 
+ &nbsp;&nbsp;&nbsp;&nbsp;msg.fromAddress() = "[localhost]:" + toStdString(ClientPortNumber); 
+ &nbsp;&nbsp;&nbsp;&nbsp;msg.toAddress() = ("[localhost]:" + toStdString(ServerPortNumber)); 
+ &nbsp;&nbsp;&nbsp;&nbsp;std::string selection = toStdString(hRepFileList-&gt;SelectedItem-&gt;ToString()); 
+ &nbsp;&nbsp;&nbsp;&nbsp;if (selection.find("*") != std::string::npos) 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;selection = selection.substr(1); 
+ &nbsp;&nbsp;&nbsp;&nbsp;msg.name() = selection; 
+ &nbsp;&nbsp;&nbsp;&nbsp;msg.content() = "no_content"; 
+ &nbsp;&nbsp;&nbsp;&nbsp;std::vector&lt;std::string&gt; vec = {}; 
+ &nbsp;&nbsp;&nbsp;&nbsp;msg.setBody(vec); 
+ &nbsp;&nbsp;&nbsp;&nbsp;pChann_-&gt;postMessage(msg.buildMessage()); 
+ } 
+</div><br>  
+ // -- function that frames an HTTPMessage for requesting a file publish and posts it to the MockChannel for sending -- // 
+  
+ void WPFClient::publishWithDep(Object^ sender, RoutedEventArgs^ args) 
+ {<button onClick = "OnClickDiv('div23', 'button23')" id = "button23">-</button><div id = "div23"> 
+ &nbsp;&nbsp;&nbsp;&nbsp;if (hRepFileList-&gt;SelectedItem == nullptr) 
+<div id = "div24"> &nbsp;&nbsp;&nbsp;&nbsp;{ 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;hStatus-&gt;Text = "Please select a file"; 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;return; 
+ &nbsp;&nbsp;&nbsp;&nbsp;} 
+</div><br> &nbsp;&nbsp;&nbsp;&nbsp;std::string type = toStdString(hRepFileList-&gt;SelectedItem-&gt;ToString()); 
+ &nbsp;&nbsp;&nbsp;&nbsp;if (type.find(".htm") != std::string::npos || type.find(".js") != std::string::npos || type.find(".css") != std::string::npos) 
+<div id = "div25"> &nbsp;&nbsp;&nbsp;&nbsp;{ 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;hStatus-&gt;Text = "Please select another file"; 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;return; 
+ &nbsp;&nbsp;&nbsp;&nbsp;} 
+</div><br> &nbsp;&nbsp;&nbsp;&nbsp;Console::Write("\n  sending publish request"); 
+ &nbsp;&nbsp;&nbsp;&nbsp;hStatus-&gt;Text = "Sending Publish With Dependencies Request"; 
+ &nbsp;&nbsp;&nbsp;&nbsp;HTTPMessage msg; 
+ &nbsp;&nbsp;&nbsp;&nbsp;msg.command() = "publish"; 
+ &nbsp;&nbsp;&nbsp;&nbsp;msg.fromAddress() = "[localhost]:" + toStdString(ClientPortNumber); 
+ &nbsp;&nbsp;&nbsp;&nbsp;msg.toAddress() = ("[localhost]:" + toStdString(ServerPortNumber)); 
+ &nbsp;&nbsp;&nbsp;&nbsp;std::string selection = toStdString(hRepFileList-&gt;SelectedItem-&gt;ToString()); 
+ &nbsp;&nbsp;&nbsp;&nbsp;if (selection.find("*") != std::string::npos) 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;selection = selection.substr(1); 
+ &nbsp;&nbsp;&nbsp;&nbsp;msg.name() = selection; 
+ &nbsp;&nbsp;&nbsp;&nbsp;msg.content() = "publishing"; 
+ &nbsp;&nbsp;&nbsp;&nbsp;std::vector&lt;std::string&gt; vec = { }; 
+ &nbsp;&nbsp;&nbsp;&nbsp;msg.setBody(vec); 
+ &nbsp;&nbsp;&nbsp;&nbsp;pChann_-&gt;postMessage(msg.buildMessage()); 
+ } 
+</div><br>  
+ // -- accepts a std::string and returns an equivalent System::String^ -- // 
+  
+ String^ WPFClient::toSystemString(std::string& str) 
+ {<button onClick = "OnClickDiv('div26', 'button26')" id = "button26">-</button><div id = "div26"> 
+ &nbsp;&nbsp;&nbsp;&nbsp;StringBuilder^ pStr = gcnew StringBuilder(); 
+ &nbsp;&nbsp;&nbsp;&nbsp;for (size_t i = 0; i &lt; str.size(); ++i) 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;pStr-&gt;Append((Char)str[i]); 
+ &nbsp;&nbsp;&nbsp;&nbsp;return pStr-&gt;ToString(); 
+ } 
+</div><br>  
+ // -- function to update the listboxes that display the repository files -- // 
+  
+ void WPFClient::addPackage(String^ msg) 
+ {<button onClick = "OnClickDiv('div27', 'button27')" id = "button27">-</button><div id = "div27"> 
+ &nbsp;&nbsp;&nbsp;&nbsp;HTTPMessage httpMsg; 
+ &nbsp;&nbsp;&nbsp;&nbsp;std::string stdstringMsg = toStdString(msg); 
+ &nbsp;&nbsp;&nbsp;&nbsp;httpMsg.parseMessage(stdstringMsg); 
+ &nbsp;&nbsp;&nbsp;&nbsp;std::vector&lt;std::string&gt; packages_ = httpMsg.getBody(); 
+ &nbsp;&nbsp;&nbsp;&nbsp;array&lt;String^&gt;^ sysPackages_ = gcnew array&lt;String^&gt;(packages_.size()); 
+ &nbsp;&nbsp;&nbsp;&nbsp;hCategoriesList-&gt;Items-&gt;Clear(); 
+ &nbsp;&nbsp;&nbsp;&nbsp;for (size_t i = 0; i &lt; packages_.size(); i++) 
+<div id = "div28"> &nbsp;&nbsp;&nbsp;&nbsp;{ 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;sysPackages_[i] = toSystemString(packages_[i]); 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;hCategoriesList-&gt;Items-&gt;Add(sysPackages_[i]); 
+ &nbsp;&nbsp;&nbsp;&nbsp;} 
+</div><br> &nbsp;&nbsp;&nbsp;&nbsp;hStatus-&gt;Text = "Updated Package List"; 
+ } 
+</div><br>  
+ // -- function to update the listboxes that display the repository files -- // 
+  
+ void WPFClient::addFiles(String^ msg) 
+ {<button onClick = "OnClickDiv('div29', 'button29')" id = "button29">-</button><div id = "div29"> 
+ &nbsp;&nbsp;&nbsp;&nbsp;HTTPMessage httpMsg; 
+ &nbsp;&nbsp;&nbsp;&nbsp;std::string stdstringMsg = toStdString(msg); 
+ &nbsp;&nbsp;&nbsp;&nbsp;httpMsg.parseMessage(stdstringMsg); 
+ &nbsp;&nbsp;&nbsp;&nbsp;std::vector&lt;std::string&gt; packages_ = httpMsg.getBody(); 
+ &nbsp;&nbsp;&nbsp;&nbsp;array&lt;String^&gt;^ sysPackages_ = gcnew array&lt;String^&gt;(packages_.size()); 
+ &nbsp;&nbsp;&nbsp;&nbsp;hRepFileList-&gt;Items-&gt;Clear(); 
+ &nbsp;&nbsp;&nbsp;&nbsp;for (size_t i = 0; i &lt; packages_.size(); i++) 
+<div id = "div30"> &nbsp;&nbsp;&nbsp;&nbsp;{ 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;sysPackages_[i] = toSystemString(packages_[i]); 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;hRepFileList-&gt;Items-&gt;Add(sysPackages_[i]); 
+ &nbsp;&nbsp;&nbsp;&nbsp;} 
+</div><br> &nbsp;&nbsp;&nbsp;&nbsp;hStatus-&gt;Text = "Updated File List"; 
+ } 
+</div><br>  
+ // -- updates the text of the status bar with the specified String^ -- // 
+  
+ void WPFClient::updateStatusBar(String^ msg) 
+ {<button onClick = "OnClickDiv('div31', 'button31')" id = "button31">-</button><div id = "div31"> 
+ &nbsp;&nbsp;&nbsp;&nbsp;hStatus-&gt;Text = msg; 
+ } 
+</div><br>  
+ // -- gets a message from the MockChannel and takes appropriate actions depending on the message received -- // 
+  
+ void WPFClient::getMessage() 
+ {<button onClick = "OnClickDiv('div32', 'button32')" id = "button32">-</button><div id = "div32"> 
+ &nbsp;&nbsp;&nbsp;&nbsp;// recvThread runs this function 
+ &nbsp;&nbsp;&nbsp;&nbsp;while (true) 
+<div id = "div33"> &nbsp;&nbsp;&nbsp;&nbsp;{ 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::cout << "\n  receive thread calling getMessage()"; 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::string msg = pChann_-&gt;getMessage(); 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;HTTPMessage httpMsg; 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;httpMsg.parseMessage(msg); 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if (httpMsg.command() == "package_list") 
+<div id = "div34"> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{ 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;String^ sMsg = toSystemString(msg); 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;array&lt;String^&gt;^ args = gcnew array&lt;String^&gt;(1); 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;args[0] = sMsg; 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Action&lt;String^&gt;^ act = gcnew Action&lt;String^&gt;(this, &WPFClient::addPackage); 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Dispatcher-&gt;Invoke(act, args);  // must call addText on main UI thread 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;} 
+</div><br> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;else if (httpMsg.command() == "file_list") 
+<div id = "div35"> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{ 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;String^ sMsg = toSystemString(msg); 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;array&lt;String^&gt;^ args = gcnew array&lt;String^&gt;(1); 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;args[0] = sMsg; 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Action&lt;String^&gt;^ act = gcnew Action&lt;String^&gt;(this, &WPFClient::addFiles); 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Dispatcher-&gt;Invoke(act, args);  // must call addText on main UI thread 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;} 
+</div><br> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;else if (httpMsg.command() == "published") 
+<div id = "div36"> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{ 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;String^ sMsg = "Publish Successful"; 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;array&lt;String^&gt;^ args = gcnew array&lt;String^&gt;(1); 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;args[0] = sMsg; 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Action&lt;String^&gt;^ act = gcnew Action&lt;String^&gt;(this, &WPFClient::updateStatusBar); 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Dispatcher-&gt;Invoke(act, args); 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;} 
+</div><br> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;else if (httpMsg.command() == "file_deleted") 
+<div id = "div37"> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{ 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;String^ sMsg = "Delete Successful"; 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;array&lt;String^&gt;^ args = gcnew array&lt;String^&gt;(1); 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;args[0] = sMsg; 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Action&lt;String^&gt;^ act = gcnew Action&lt;String^&gt;(this, &WPFClient::updateStatusBar); 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Dispatcher-&gt;Invoke(act, args); 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;} 
+</div><br> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;else if (httpMsg.command() == "upload") 
+<div id = "div38"> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{ 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;String^ sMsg = "Uploading Successful"; 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;array&lt;String^&gt;^ args = gcnew array&lt;String^&gt;(1); 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;args[0] = sMsg; 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Action&lt;String^&gt;^ act = gcnew Action&lt;String^&gt;(this, &WPFClient::updateStatusBar); 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Dispatcher-&gt;Invoke(act, args); 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;} 
+</div><br> &nbsp;&nbsp;&nbsp;&nbsp;} 
+</div><br> } 
+</div><br>  
+ // -- sets up the labels for the upload view -- // 
+  
+ void WPFClient::setUpUploadLabels() 
+ {<button onClick = "OnClickDiv('div39', 'button39')" id = "button39">-</button><div id = "div39"> 
+ &nbsp;&nbsp;&nbsp;&nbsp;hUploadTextBlock-&gt;Text = "Select Folder\n to Upload : "; 
+ &nbsp;&nbsp;&nbsp;&nbsp;hUploadTextBlock-&gt;Height = 30; 
+ &nbsp;&nbsp;&nbsp;&nbsp;hUploadTextBlock-&gt;Width = 120; 
+ &nbsp;&nbsp;&nbsp;&nbsp;hUploadGrid-&gt;SetRow(hUploadTextBlock, 0); 
+ &nbsp;&nbsp;&nbsp;&nbsp;hUploadGrid-&gt;SetColumn(hUploadTextBlock, 0); 
+ &nbsp;&nbsp;&nbsp;&nbsp;hUploadGrid-&gt;Children-&gt;Add(hUploadTextBlock); 
+  
+ &nbsp;&nbsp;&nbsp;&nbsp;hCategoriesTextBlock-&gt;Text = "Select Category\n to upload : "; 
+ &nbsp;&nbsp;&nbsp;&nbsp;hCategoriesTextBlock-&gt;Height = 30; 
+ &nbsp;&nbsp;&nbsp;&nbsp;hCategoriesTextBlock-&gt;Width = 120; 
+ &nbsp;&nbsp;&nbsp;&nbsp;hUploadGrid-&gt;SetRow(hCategoriesTextBlock, 2); 
+ &nbsp;&nbsp;&nbsp;&nbsp;hUploadGrid-&gt;SetColumn(hCategoriesTextBlock, 0); 
+ &nbsp;&nbsp;&nbsp;&nbsp;hUploadGrid-&gt;Children-&gt;Add(hCategoriesTextBlock); 
+ } 
+</div><br>  
+ // -- sets up the listboxes for the upload tab -- // 
+  
+ void WPFClient::setUpUploadLists() 
+ {<button onClick = "OnClickDiv('div40', 'button40')" id = "button40">-</button><div id = "div40"> 
+ &nbsp;&nbsp;&nbsp;&nbsp;Border^ hBorder1 = gcnew Border(); 
+ &nbsp;&nbsp;&nbsp;&nbsp;hBorder1-&gt;BorderThickness = Thickness(1); 
+ &nbsp;&nbsp;&nbsp;&nbsp;hBorder1-&gt;BorderBrush = Brushes::Black; 
+ &nbsp;&nbsp;&nbsp;&nbsp;hUploadList-&gt;SelectionMode = SelectionMode::Multiple; 
+ &nbsp;&nbsp;&nbsp;&nbsp;hBorder1-&gt;Child = hUploadList; 
+ &nbsp;&nbsp;&nbsp;&nbsp;hUploadGrid-&gt;SetRow(hBorder1, 0); 
+ &nbsp;&nbsp;&nbsp;&nbsp;hUploadGrid-&gt;SetColumn(hBorder1, 1); 
+ &nbsp;&nbsp;&nbsp;&nbsp;hUploadGrid-&gt;Children-&gt;Add(hBorder1); 
+  
+ &nbsp;&nbsp;&nbsp;&nbsp;Border^ hBorder2 = gcnew Border(); 
+ &nbsp;&nbsp;&nbsp;&nbsp;hBorder2-&gt;BorderThickness = Thickness(1); 
+ &nbsp;&nbsp;&nbsp;&nbsp;hBorder2-&gt;BorderBrush = Brushes::Black; 
+ &nbsp;&nbsp;&nbsp;&nbsp;hCategoriesList-&gt;SelectionMode = SelectionMode::Single; 
+ &nbsp;&nbsp;&nbsp;&nbsp;hBorder2-&gt;Child = hCategoriesList; 
+ &nbsp;&nbsp;&nbsp;&nbsp;hUploadGrid-&gt;SetRow(hBorder2, 2); 
+ &nbsp;&nbsp;&nbsp;&nbsp;hUploadGrid-&gt;SetColumn(hBorder2, 1); 
+ &nbsp;&nbsp;&nbsp;&nbsp;hUploadGrid-&gt;Children-&gt;Add(hBorder2); 
+ } 
+</div><br>  
+ // -- sets up the buttons for the upload tab -- // 
+  
+ void WPFClient::setUpUploadButtons() 
+ {<button onClick = "OnClickDiv('div41', 'button41')" id = "button41">-</button><div id = "div41"> 
+ &nbsp;&nbsp;&nbsp;&nbsp;// Select Files button 
+ &nbsp;&nbsp;&nbsp;&nbsp;hFolderBrowseButton-&gt;Content = "Select Files"; 
+ &nbsp;&nbsp;&nbsp;&nbsp;hFolderBrowseButton-&gt;Height = 30; 
+ &nbsp;&nbsp;&nbsp;&nbsp;hFolderBrowseButton-&gt;Width = 120; 
+ &nbsp;&nbsp;&nbsp;&nbsp;hFolderBrowseButton-&gt;BorderThickness = Thickness(2); 
+ &nbsp;&nbsp;&nbsp;&nbsp;hFolderBrowseButton-&gt;BorderBrush = Brushes::Black; 
+ &nbsp;&nbsp;&nbsp;&nbsp;hUploadGrid-&gt;SetRow(hFolderBrowseButton, 0); 
+ &nbsp;&nbsp;&nbsp;&nbsp;hUploadGrid-&gt;SetColumn(hFolderBrowseButton, 2); 
+ &nbsp;&nbsp;&nbsp;&nbsp;hUploadGrid-&gt;Children-&gt;Add(hFolderBrowseButton); 
+  
+ &nbsp;&nbsp;&nbsp;&nbsp;// Get Repository Categories List button. 
+ &nbsp;&nbsp;&nbsp;&nbsp;hUploadGetFileListButton-&gt;Content = "Get Categories List"; 
+ &nbsp;&nbsp;&nbsp;&nbsp;hUploadGetFileListButton-&gt;Height = 30; 
+ &nbsp;&nbsp;&nbsp;&nbsp;hUploadGetFileListButton-&gt;Width = 120; 
+ &nbsp;&nbsp;&nbsp;&nbsp;hUploadGetFileListButton-&gt;BorderThickness = Thickness(2); 
+ &nbsp;&nbsp;&nbsp;&nbsp;hUploadGetFileListButton-&gt;BorderBrush = Brushes::Black; 
+ &nbsp;&nbsp;&nbsp;&nbsp;hUploadGrid-&gt;SetRow(hUploadGetFileListButton, 2); 
+ &nbsp;&nbsp;&nbsp;&nbsp;hUploadGrid-&gt;SetColumn(hUploadGetFileListButton, 2); 
+ &nbsp;&nbsp;&nbsp;&nbsp;hUploadGrid-&gt;Children-&gt;Add(hUploadGetFileListButton); 
+  
+ &nbsp;&nbsp;&nbsp;&nbsp;// Upload button 
+ &nbsp;&nbsp;&nbsp;&nbsp;hUploadButton-&gt;Content = "Upload"; 
+ &nbsp;&nbsp;&nbsp;&nbsp;hUploadButton-&gt;Height = 30; 
+ &nbsp;&nbsp;&nbsp;&nbsp;hUploadButton-&gt;Width = 120; 
+ &nbsp;&nbsp;&nbsp;&nbsp;hUploadButton-&gt;BorderThickness = Thickness(2); 
+ &nbsp;&nbsp;&nbsp;&nbsp;hUploadButton-&gt;BorderBrush = Brushes::Black; 
+ &nbsp;&nbsp;&nbsp;&nbsp;hUploadGrid-&gt;SetRow(hUploadButton, 3); 
+ &nbsp;&nbsp;&nbsp;&nbsp;hUploadGrid-&gt;SetColumn(hUploadButton, 1); 
+ &nbsp;&nbsp;&nbsp;&nbsp;hUploadGrid-&gt;Children-&gt;Add(hUploadButton); 
+  
+ } 
+</div><br>  
+ // -- sets up the upload tab and its controls -- // 
+  
+ void WPFClient::setUpUploadView() 
+ {<button onClick = "OnClickDiv('div42', 'button42')" id = "button42">-</button><div id = "div42"> 
+ &nbsp;&nbsp;&nbsp;&nbsp;Console::Write("\n  setting up Upload view"); 
+ &nbsp;&nbsp;&nbsp;&nbsp;hUploadGrid-&gt;Margin = Thickness(20); 
+ &nbsp;&nbsp;&nbsp;&nbsp;hUploadTab-&gt;Content = hUploadGrid; 
+ &nbsp;&nbsp;&nbsp;&nbsp;RowDefinition^ hRow1Def = gcnew RowDefinition(); 
+ &nbsp;&nbsp;&nbsp;&nbsp;hRow1Def-&gt;Height = GridLength(200); 
+ &nbsp;&nbsp;&nbsp;&nbsp;hUploadGrid-&gt;RowDefinitions-&gt;Add(hRow1Def); 
+ &nbsp;&nbsp;&nbsp;&nbsp;RowDefinition^ spacer = gcnew RowDefinition(); 
+ &nbsp;&nbsp;&nbsp;&nbsp;spacer-&gt;Height = GridLength(20); 
+ &nbsp;&nbsp;&nbsp;&nbsp;hUploadGrid-&gt;RowDefinitions-&gt;Add(spacer); 
+ &nbsp;&nbsp;&nbsp;&nbsp;RowDefinition^ hRow2Def = gcnew RowDefinition(); 
+ &nbsp;&nbsp;&nbsp;&nbsp;hRow2Def-&gt;Height = GridLength(200); 
+ &nbsp;&nbsp;&nbsp;&nbsp;RowDefinition^ hRow2Def2 = gcnew RowDefinition(); 
+ &nbsp;&nbsp;&nbsp;&nbsp;//hRow2Def2-&gt;Height = GridLength(75); 
+ &nbsp;&nbsp;&nbsp;&nbsp;hUploadGrid-&gt;RowDefinitions-&gt;Add(hRow2Def); 
+ &nbsp;&nbsp;&nbsp;&nbsp;hUploadGrid-&gt;RowDefinitions-&gt;Add(hRow2Def2); 
+ &nbsp;&nbsp;&nbsp;&nbsp;ColumnDefinition^ hColumn1Def = gcnew ColumnDefinition(); 
+ &nbsp;&nbsp;&nbsp;&nbsp;hColumn1Def-&gt;Width = GridLength(100); 
+ &nbsp;&nbsp;&nbsp;&nbsp;hUploadGrid-&gt;ColumnDefinitions-&gt;Add(hColumn1Def); 
+ &nbsp;&nbsp;&nbsp;&nbsp;ColumnDefinition^ hColumn2Def = gcnew ColumnDefinition(); 
+ &nbsp;&nbsp;&nbsp;&nbsp;hColumn2Def-&gt;Width = GridLength(450); 
+ &nbsp;&nbsp;&nbsp;&nbsp;hUploadGrid-&gt;ColumnDefinitions-&gt;Add(hColumn2Def); 
+ &nbsp;&nbsp;&nbsp;&nbsp;ColumnDefinition^ hColumn3Def = gcnew ColumnDefinition(); 
+ &nbsp;&nbsp;&nbsp;&nbsp;//hColumn3Def-&gt;Width = GridLength(500); 
+ &nbsp;&nbsp;&nbsp;&nbsp;hUploadGrid-&gt;ColumnDefinitions-&gt;Add(hColumn3Def); 
+  
+ &nbsp;&nbsp;&nbsp;&nbsp;setUpUploadLabels(); 
+ &nbsp;&nbsp;&nbsp;&nbsp;setUpUploadLists(); 
+ &nbsp;&nbsp;&nbsp;&nbsp;setUpUploadButtons(); 
+  
+ &nbsp;&nbsp;&nbsp;&nbsp;hFolderBrowserDialog-&gt;ShowNewFolderButton = false; 
+ &nbsp;&nbsp;&nbsp;&nbsp;hFolderBrowserDialog-&gt;SelectedPath = System::IO::Directory::GetCurrentDirectory(); 
+ } 
+</div><br>  
+ // -- browses the local file system and displays source files in selected directory -- // 
+  
+ void WPFClient::browseForFolder(Object^ sender, RoutedEventArgs^ args) 
+ {<button onClick = "OnClickDiv('div43', 'button43')" id = "button43">-</button><div id = "div43"> 
+ &nbsp;&nbsp;&nbsp;&nbsp;std::cout << "\n  Browsing for folder"; 
+ &nbsp;&nbsp;&nbsp;&nbsp;hUploadList-&gt;Items-&gt;Clear(); 
+ &nbsp;&nbsp;&nbsp;&nbsp;System::Windows::Forms::DialogResult result; 
+ &nbsp;&nbsp;&nbsp;&nbsp;result = hFolderBrowserDialog-&gt;ShowDialog(); 
+ &nbsp;&nbsp;&nbsp;&nbsp;if (result == System::Windows::Forms::DialogResult::OK) 
+<div id = "div44"> &nbsp;&nbsp;&nbsp;&nbsp;{ 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;String^ path = hFolderBrowserDialog-&gt;SelectedPath; 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;array&lt;String^&gt;^ files = System::IO::Directory::GetFiles(path, L"*.h"); 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;for (int i = 0; i &lt; files-&gt;Length; ++i) 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;hUploadList-&gt;Items-&gt;Add(files[i]); 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;array&lt;String^&gt;^ files1 = System::IO::Directory::GetFiles(path, L"*.cpp"); 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;for (int i = 0; i &lt; files1-&gt;Length; ++i) 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;hUploadList-&gt;Items-&gt;Add(files1[i]); 
+ &nbsp;&nbsp;&nbsp;&nbsp;} 
+</div><br> } 
+</div><br>  
+ // -- logs a window loaded message on the console -- // 
+  
+ void WPFClient::OnLoaded(Object^ sender, RoutedEventArgs^ args) 
+ {<button onClick = "OnClickDiv('div45', 'button45')" id = "button45">-</button><div id = "div45"> 
+ &nbsp;&nbsp;&nbsp;&nbsp;Console::Write("\n  Window loaded"); 
+ } 
+</div><br>  
+ // -- logs a window closed message on the console and shuts down the MockChannel -- // 
+  
+ void WPFClient::Unloading(Object^ sender, System::ComponentModel::CancelEventArgs^ args) 
+ {<button onClick = "OnClickDiv('div46', 'button46')" id = "button46">-</button><div id = "div46"> 
+ &nbsp;&nbsp;&nbsp;&nbsp;Console::Write("\n  Window closing"); 
+ &nbsp;&nbsp;&nbsp;&nbsp;pChann_-&gt;stop(); 
+ } 
+</div><br>  
+ [STAThread] 
+ //int _stdcall WinMain() 
+ int main(array&lt;System::String^&gt;^ args) 
+ {<button onClick = "OnClickDiv('div47', 'button47')" id = "button47">-</button><div id = "div47"> 
+ &nbsp;&nbsp;&nbsp;&nbsp;Console::WriteLine(L"\n Starting WPFClient"); 
+ &nbsp;&nbsp;&nbsp;&nbsp;std::cout << "\n\n-----------------------------Requirement 1-------------------------------------\n\n"; 
+ &nbsp;&nbsp;&nbsp;&nbsp;std::cout << "  Used Windows Presentation Foundation (WPF) to provide a required client2 Graphical User Interface (GUI).\n"; 
+ &nbsp;&nbsp;&nbsp;&nbsp;Application^ app = gcnew Application(); 
+ &nbsp;&nbsp;&nbsp;&nbsp;app-&gt;Run(gcnew WPFClient(args)); 
+ &nbsp;&nbsp;&nbsp;&nbsp;Console::WriteLine(L"\n\n"); 
+ } 
+</div><br>
+</pre>
+</body>
+</html>

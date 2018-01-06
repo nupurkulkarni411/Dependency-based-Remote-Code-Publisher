@@ -1,0 +1,125 @@
+<!----------------------------------------------------------------------------
+Graph.cpp.htm - Generated HTML file of Project #3
+Published 04 April 2017
+Nupur Kulkarni, CSE687 - Object Oriented Design, Spring 2017
+
+Note:
+- Markup characters in the text part, enclosed in <pre>...</pre> have been 
+  replaced with escape sequences, e.g., < becomes &lt; and > becomes &gt;
+----------------------------------------------------------------------------->
+<html>
+<head>
+<link rel = stylesheet href = CSSFile.css>
+<script src= JSFile.js></script>
+</head>
+<body>
+<h3>Graph.cpp</h3>
+<hr />
+<div class=indent><h4>Dependencies:</h4><p><a href = Graph.h.htm> Graph.h</a></p><p><a href = Logger.cpp.htm> Logger.cpp</a></p><p><a href = SemiExp.cpp.htm> SemiExp.cpp</a></p><p><a href = ConvertToHtml.cpp.htm> ConvertToHtml.cpp</a></p><p><a href = HttpMessage.cpp.htm> HttpMessage.cpp</a></p><p><a href = MockChannel.cpp.htm> MockChannel.cpp</a></p><p><a href = MsgServer.cpp.htm> MsgServer.cpp</a></p><p><a href = TypeAnal.cpp.htm> TypeAnal.cpp</a></p><p><a href = Window.cpp.htm> Window.cpp</a></p></div>
+<hr />
+<pre>
+ /////////////////////////////////////////////////////////////// 
+ // Graph.cpp - Graph Library                                 // 
+ // Ver 1.6                                                   // 
+ // Language:    Visual C++ 2012                              // 
+ // Platform:    Lenova ThinkPad E420s, Windows 7             // 
+ // Application: Type-based Dependency Analysis,              // 
+ //              CSE687 - Object Oriented Design              // 
+ // Author:      Nupur Kulkarni, Syracuse University,         // 
+ //              nvkulkar@syr.edu                             // 
+ // Source:      Jim Fawcett, CST 4-187, Syracuse University  // 
+ //              (315) 443-3948, jfawcett@twcny.rr.com        // 
+ /////////////////////////////////////////////////////////////// 
+ /* 
+  
+ * Build Process: 
+ * -------------- 
+ * Required Files: DepAnal.h, FileSystem.h, Parser.h, NoSqlDb.h 
+ * 
+ * Maintenance History: 
+ * -------------------- 
+ * ver 1.0 : 01 March 2017 
+ * - first release of new design 
+ */ 
+  
+  
+ #include &lt;iostream&gt; 
+ #include &lt;fstream&gt; 
+ #include "Graph.h" 
+ using namespace CodeAnalysis; 
+  
+ typedef Graph&lt;std::string, std::string&gt; graph; 
+ typedef Vertex&lt;std::string, std::string&gt; vertex; 
+ typedef Display&lt;std::string, std::string&gt; display; 
+  
+ void showVert(Vertex&lt;std::string, std::string&gt;& v) 
+ {<button onClick = "OnClickDiv('div1', 'button1')" id = "button1">-</button><div id = "div1"> 
+   std::cout << "\n  " << v.id(); 
+ } 
+</div><br>  
+ template&lt;typename V, typename E&gt; 
+ void TshowVert(Vertex&lt;V,E&gt;& v) 
+ {<button onClick = "OnClickDiv('div2', 'button2')" id = "button2">-</button><div id = "div2"> 
+   std::cout << "\n  " << v.id(); 
+ } 
+</div><br>  
+ #ifdef TEST_GRAPH 
+  
+ int main() 
+ {<button onClick = "OnClickDiv('div3', 'button3')" id = "button3">-</button><div id = "div3"> 
+   std::cout << "\n  Testing Graph Library"; 
+<div id = "div4">   try{ 
+     std::cout << "\n  Constructing Graph instance"; 
+     graph g; 
+     vertex v1("v1");vertex v2("v2");vertex v3("v3");vertex v4("v4");vertex v5("v5", 50); 
+     g.addVertex(v2);g.addVertex(v1);g.addVertex(v3);g.addVertex(v4); 
+     g.addVertex(v5);g.addEdge("e1",v1,v2);g.addEdge("e2",v1,v3);g.addEdge("e3",v2,v3); 
+     g.addEdge("e4",v4,v3);g.addEdge("e5",v5,v2); 
+     display::show(g); 
+     std::cout << "\n  Making copy of instance"; 
+     graph gcopy = g; 
+     display::show(gcopy); 
+     std::cout << "\n  Modifying copy's values"; 
+     for(auto& v : gcopy) 
+       v.value() += "copy"; 
+     display::show(gcopy); 
+     std::cout << "\n  Assigning original instance to copy"; 
+     gcopy = g; 
+     display::show(gcopy); 
+     std::cout << "\n  Vertices with no Parents:"; 
+     std::vector&lt; vertex &gt; verts = display::vertsWithNoParents(g); 
+     for(size_t i=0; i&lt;verts.size(); ++i) 
+       std::cout << verts[i].value().c_str() << " "; 
+     std::cout << "\n"; 
+     std::cout << "\n  Testing Depth First Search with function pointer"; 
+<div id = "div5">     for(auto& vert : g){ 
+       std::cout << "\n  starting at id " << vert.id(); 
+       g.dfs(vert, TshowVert&lt;std::string, std::string&gt;);} 
+</div><br>     std::cout << "\n  Testing Depth First Search with Functor"; 
+     class showFunctor{<button onClick = "OnClickDiv('div6', 'button6')" id = "button6">-</button><div id = "div6"> 
+     public: 
+       void operator()(Vertex&lt;std::string, std::string&gt;& vert){<button onClick = "OnClickDiv('div7', 'button7')" id = "button7">-</button><div id = "div7"> 
+         std::cout << "\n  From functor: vertix id = " << vert.id(); 
+         std::cout << ", number of edges = " << vert.size();} 
+</div><br>     }; 
+</div><br>     g.dfs(g[0], showFunctor()); 
+     std::cout << "\n  Testing Serialization to XML"; 
+     std::string str = GraphToXmlString(g); 
+     std::ofstream out("testGraph.xml"); 
+     std::cout << "\n  Testing Graph construction from XML"; 
+     graph gtest; 
+     GraphFromXmlString(gtest, str); 
+     display::show(gtest); 
+   } 
+</div><br><div id = "div8">   catch(std::exception& ex){ 
+     std::cout << "\n\n  " << ex.what() << "\n\n";} 
+</div><br>   return 0; 
+ } 
+</div><br>  
+ #endif 
+  
+  
+
+</pre>
+</body>
+</html>

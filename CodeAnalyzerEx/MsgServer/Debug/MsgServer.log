@@ -1,0 +1,32 @@
+﻿  MsgServer.cpp
+c:\users\lenovo\desktop\ood check\project4\codeanalyzerex\msgserver\msgserver.cpp(538): warning C4018: '>=': signed/unsigned mismatch
+  XmlParser.cpp
+  XmlElement.cpp
+  XMLTokenizer.cpp
+  xmlElementParts.cpp
+  XmlDocument.cpp
+  Utilities.cpp
+  TypeAnal.cpp
+  Tokenizer.cpp
+  Sockets.cpp
+  SemiExp.cpp
+  ScopeStack.cpp
+  Parser.cpp
+  ConfigureParser.cpp
+  ActionsAndRules.cpp
+  Logger.cpp
+  HttpMessage.cpp
+  GrammarHelpers.cpp
+  FileSystem.cpp
+  FileMgr.cpp
+  Generating Code...
+  Compiling...
+  Display.cpp
+  DepAnal.cpp
+  Cpp11-BlockingQueue.cpp
+  ConvertToHtml.cpp
+  Executive.cpp
+  AbstrSynTree.cpp
+  Generating Code...
+  MsgServer.vcxproj -> C:\Users\lenovo\Desktop\ood check\project4\CodeAnalyzerEx\Debug\MsgServer.exe
+  MsgServer.vcxproj -> C:\Users\lenovo\Desktop\ood check\project4\CodeAnalyzerEx\Debug\MsgServer.pdb (Full PDB)

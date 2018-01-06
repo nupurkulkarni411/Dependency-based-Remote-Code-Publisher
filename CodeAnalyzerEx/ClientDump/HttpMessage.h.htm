@@ -1,0 +1,102 @@
+<!----------------------------------------------------------------------------
+HttpMessage.h.htm - Generated HTML file of Project #3
+Published 04 April 2017
+Nupur Kulkarni, CSE687 - Object Oriented Design, Spring 2017
+
+Note:
+- Markup characters in the text part, enclosed in <pre>...</pre> have been 
+  replaced with escape sequences, e.g., < becomes &lt; and > becomes &gt;
+----------------------------------------------------------------------------->
+<html>
+<head>
+<link rel = stylesheet href = CSSFile.css>
+<script src= JSFile.js></script>
+</head>
+<body>
+<h3>HttpMessage.h</h3>
+<hr />
+<div class=indent><h4>Dependencies:</h4><p><a href = HttpMessage.cpp.htm> HttpMessage.cpp</a></p><p><a href = Logger.cpp.htm> Logger.cpp</a></p></div>
+<hr />
+<pre>
+ #ifndef HTTPMESSAGE_H 
+ #define HTTPMESSAGE_H 
+  
+ /////////////////////////////////////////////////////////////////////// 
+ // HTTPMessage.h - Defines HTTP style messages to be used for        // 
+ //&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;client-server interaction                        // 
+ // Platform:    Lenovo Ideapad 500, Windows 10, AMD A10 x64          // 
+ // Application: Remote Code Publisher, Project 4                     // 
+ //              CSE687 - Object Oriented Design                      // 
+ // Author:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Nupur Kulkarni, Syracuse University                  // 
+ //&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;nvkulkar@syr.edu                                     // 
+ // Source:      Jim Fawcett, CST 2-187, Syracuse University          // 
+ //              (315) 443-3948, jfawcett@twcny.rr.com                // 
+ /////////////////////////////////////////////////////////////////////// 
+ /* 
+ * Package Operations: 
+ * ------------------- 
+ * This package provides construction or parsing of HTTP style messages. 
+ * 
+ * 
+ * Public Interface: 
+ * -------------------- 
+ * buildMessage()&nbsp;&nbsp;&nbsp;&nbsp;: returns the HTTPMessage as a std::string 
+ * parseMessage()&nbsp;&nbsp;&nbsp;&nbsp;: parses a std::string into an HTTPMessage 
+ * swapAdresses()&nbsp;&nbsp;&nbsp;&nbsp;: swaps the to and from address fields of the message 
+ * 
+ * The other methods are getters and setters for the various message fields, 
+ * as named 
+ * 
+ * Build Process: 
+ * -------------- 
+ * Required Files: 
+ *   HTTPMessage.h, HTTPMessage.cpp 
+ * 
+ * Build Command: devenv RemoteRepository.sln /rebuild debug 
+ * 
+ * Maintenance History: 
+ * -------------------- 
+ * ver 1.0 : 25 Apr 2016 
+ * - first release 
+ */ 
+  
+  
+ #include &lt;string&gt; 
+ #include &lt;vector&gt; 
+ #include &lt;sstream&gt; 
+  
+ class HTTPMessage 
+ {<button onClick = "OnClickDiv('div1', 'button1')" id = "button1">-</button><div id = "div1"> 
+ public: 
+ &nbsp;&nbsp;&nbsp;&nbsp;HTTPMessage() {} 
+ &nbsp;&nbsp;&nbsp;&nbsp;HTTPMessage(const HTTPMessage& message); 
+ &nbsp;&nbsp;&nbsp;&nbsp;HTTPMessage& operator=(const HTTPMessage& message); 
+ &nbsp;&nbsp;&nbsp;&nbsp;std::string& command(); 
+ &nbsp;&nbsp;&nbsp;&nbsp;std::string& fromAddress(); 
+ &nbsp;&nbsp;&nbsp;&nbsp;std::string& toAddress(); 
+ &nbsp;&nbsp;&nbsp;&nbsp;std::string& name(); 
+ &nbsp;&nbsp;&nbsp;&nbsp;std::string& content(); 
+ &nbsp;&nbsp;&nbsp;&nbsp;std::string& contentLength(); 
+ &nbsp;&nbsp;&nbsp;&nbsp;void setContentLength(int len); 
+ &nbsp;&nbsp;&nbsp;&nbsp;size_t getContentLength(); 
+ &nbsp;&nbsp;&nbsp;&nbsp;void swapAddresses(); 
+ &nbsp;&nbsp;&nbsp;&nbsp;std::string buildMessage(); 
+ &nbsp;&nbsp;&nbsp;&nbsp;void setBody(std::vector&lt;std::string&gt; list); 
+ &nbsp;&nbsp;&nbsp;&nbsp;std::vector&lt;std::string&gt; getBody(); 
+ &nbsp;&nbsp;&nbsp;&nbsp;bool parseMessage(std::string msg); 
+ private: 
+ &nbsp;&nbsp;&nbsp;&nbsp;std::string msg_; 
+ &nbsp;&nbsp;&nbsp;&nbsp;std::string command_; 
+ &nbsp;&nbsp;&nbsp;&nbsp;std::string fromAddr_; 
+ &nbsp;&nbsp;&nbsp;&nbsp;std::string toAddr_; 
+ &nbsp;&nbsp;&nbsp;&nbsp;std::string name_; 
+ &nbsp;&nbsp;&nbsp;&nbsp;std::string content_; 
+ &nbsp;&nbsp;&nbsp;&nbsp;std::string contentLength_; 
+ &nbsp;&nbsp;&nbsp;&nbsp;std::vector&lt;std::string&gt; body_; 
+ }; 
+</div><br>  
+ #endif 
+
+</pre>
+</body>
+</html>

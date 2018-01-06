@@ -1,0 +1,29 @@
+
+                                             CodeAnalysis
+    ==============================================================================================
+     Tue Apr  4 23:07:28 2017
+     Path: "C:\Users\lenovo\Desktop\ood check\CodeAnalyzerEx\Analyzer"
+     Args: Executive.h, /m, /r, /f
+                                                                               
+           Code Metrics - Start Line, Size (lines/code), and Complexity (number of scopes)
+    ==============================================================================================
+
+                 file name        type                               name    line    size    cplx
+    -----------------------  ----------  ---------------------------------  ------  ------  ------
+                             namespace                   Global Namespace       1       1       4
+
+                 file name        type                               name    line    size    cplx
+    -----------------------  ----------  ---------------------------------  ------  ------  ------
+               Executive.h   namespace                       CodeAnalysis      94     117       3
+               Executive.h       class                        AnalFileMgr     102      22       1
+               Executive.h       class              CodeAnalysisExecutive     129      81       1
+
+                          Functions Exceeding Metric Limits and Public Data
+    ==============================================================================================
+                 file name        type                               name    line    size    cplx
+    -----------------------  ----------  ---------------------------------  ------  ------  ------
+
+
+
+    searched     4 dirs
+   processed     1 files

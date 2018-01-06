@@ -1,0 +1,37 @@
+
+                                             CodeAnalysis
+    ==============================================================================================
+     Tue Apr  4 18:43:33 2017
+     Path: "C:\Users\lenovo\Desktop\ood check\CodeAnalyzerEx"
+     Args: XmlWriter.cpp, /m, /r, /f
+                                                                               
+           Code Metrics - Start Line, Size (lines/code), and Complexity (number of scopes)
+    ==============================================================================================
+
+                 file name        type                               name    line    size    cplx
+    -----------------------  ----------  ---------------------------------  ------  ------  ------
+                             namespace                   Global Namespace       1       1      18
+
+                 file name        type                               name    line    size    cplx
+    -----------------------  ----------  ---------------------------------  ------  ------  ------
+             XmlWriter.cpp    function                           indentIt      16       5       1
+             XmlWriter.cpp    function                              start      24      11       2
+             XmlWriter.cpp    function                       addAttribute      40      14       3
+             XmlWriter.cpp    function                            addBody      57       8       2
+             XmlWriter.cpp    function                                end      68      11       2
+             XmlWriter.cpp    function                            element      82       6       1
+             XmlWriter.cpp    function                     addDeclaration      93       4       1
+             XmlWriter.cpp    function                         addComment     102       8       2
+             XmlWriter.cpp    function                               mOut     118       3       1
+             XmlWriter.cpp    function                               main     123      85       2
+
+                          Functions Exceeding Metric Limits and Public Data
+    ==============================================================================================
+                 file name        type                               name    line    size    cplx
+    -----------------------  ----------  ---------------------------------  ------  ------  ------
+             XmlWriter.cpp    function                               main     123      85       2
+
+
+
+    searched   159 dirs
+   processed     1 files

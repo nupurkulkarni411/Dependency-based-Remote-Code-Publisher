@@ -1,0 +1,18 @@
+C:\su\Repository\CodeAnalyzer\TestFiles-CS\bin\Debug\TestFiles-CS.exe.config
+C:\su\Repository\CodeAnalyzer\TestFiles-CS\bin\Debug\TestFiles-CS.exe
+C:\su\Repository\CodeAnalyzer\TestFiles-CS\bin\Debug\TestFiles-CS.pdb
+C:\su\Repository\CodeAnalyzer\TestFiles-CS\obj\Debug\TestFiles-CS.csprojResolveAssemblyReference.cache
+C:\su\Repository\CodeAnalyzer\TestFiles-CS\obj\Debug\TestFiles-CS.exe
+C:\su\Repository\CodeAnalyzer\TestFiles-CS\obj\Debug\TestFiles-CS.pdb
+C:\Users\lenovo\Desktop\ood check\CodeAnalyzerEx\TestFiles-CS\bin\Debug\TestFiles-CS.dll.config
+C:\Users\lenovo\Desktop\ood check\CodeAnalyzerEx\TestFiles-CS\bin\Debug\TestFiles-CS.dll
+C:\Users\lenovo\Desktop\ood check\CodeAnalyzerEx\TestFiles-CS\bin\Debug\TestFiles-CS.pdb
+C:\Users\lenovo\Desktop\ood check\CodeAnalyzerEx\TestFiles-CS\obj\Debug\TestFiles-CS.dll
+C:\Users\lenovo\Desktop\ood check\CodeAnalyzerEx\TestFiles-CS\obj\Debug\TestFiles-CS.pdb
+C:\Users\lenovo\Desktop\ood check\CodeAnalyzerEx\TestFiles-CS\obj\Debug\TestFiles-CS.csprojResolveAssemblyReference.cache
+C:\Users\lenovo\Desktop\ood check\project4\CodeAnalyzerEx\TestFiles-CS\bin\Debug\TestFiles-CS.dll.config
+C:\Users\lenovo\Desktop\ood check\project4\CodeAnalyzerEx\TestFiles-CS\bin\Debug\TestFiles-CS.dll
+C:\Users\lenovo\Desktop\ood check\project4\CodeAnalyzerEx\TestFiles-CS\bin\Debug\TestFiles-CS.pdb
+C:\Users\lenovo\Desktop\ood check\project4\CodeAnalyzerEx\TestFiles-CS\obj\Debug\TestFiles-CS.csprojResolveAssemblyReference.cache
+C:\Users\lenovo\Desktop\ood check\project4\CodeAnalyzerEx\TestFiles-CS\obj\Debug\TestFiles-CS.dll
+C:\Users\lenovo\Desktop\ood check\project4\CodeAnalyzerEx\TestFiles-CS\obj\Debug\TestFiles-CS.pdb

@@ -1,0 +1,11 @@
+﻿  MockChannel.cpp
+  Utilities.cpp
+  Sockets.cpp
+  Logger.cpp
+  HttpMessage.cpp
+  FileSystem.cpp
+  Cpp11-BlockingQueue.cpp
+  Generating Code...
+     Creating library C:\Users\lenovo\Desktop\ood check\project4\CodeAnalyzerEx\Debug\MockChannel.lib and object C:\Users\lenovo\Desktop\ood check\project4\CodeAnalyzerEx\Debug\MockChannel.exp
+  MockChannel.vcxproj -> C:\Users\lenovo\Desktop\ood check\project4\CodeAnalyzerEx\Debug\MockChannel.dll
+  MockChannel.vcxproj -> C:\Users\lenovo\Desktop\ood check\project4\CodeAnalyzerEx\Debug\MockChannel.pdb (Full PDB)

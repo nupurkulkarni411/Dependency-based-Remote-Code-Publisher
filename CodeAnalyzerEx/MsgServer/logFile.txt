@@ -1,0 +1,50 @@
+
+                                             CodeAnalysis
+    ==============================================================================================
+     Wed May  3 23:25:21 2017
+     Path: "C:\Users\lenovo\Desktop\ood check\project4\CodeAnalyzerEx\MsgServer"
+     Args: MsgServer.cpp, /m, /r, /f
+                                                                               
+           Code Metrics - Start Line, Size (lines/code), and Complexity (number of scopes)
+    ==============================================================================================
+
+                 file name        type                               name    line    size    cplx
+    -----------------------  ----------  ---------------------------------  ------  ------  ------
+                             namespace                   Global Namespace       1       1      80
+
+                 file name        type                               name    line    size    cplx
+    -----------------------  ----------  ---------------------------------  ------  ------  ------
+             MsgServer.cpp       class                      ClientHandler      73       9      11
+             MsgServer.cpp    function                      ClientHandler      74       2       1
+             MsgServer.cpp    function                         operator()      86      31       5
+             MsgServer.cpp    function                           recvFile     120      46       4
+             MsgServer.cpp       class                   RepositoryServer     171      34      65
+             MsgServer.cpp    function                    getDependencies     210      31       5
+             MsgServer.cpp    function                   RepositoryServer     243       2       1
+             MsgServer.cpp    function                            connect     247      16       3
+             MsgServer.cpp    function                      startListener     267       4       1
+             MsgServer.cpp    function                         getMessage     275       6       1
+             MsgServer.cpp    function                        postMessage     285       5       1
+             MsgServer.cpp    function                        startSender     294       4       2
+             MsgServer.cpp    function                              async     294       1       1
+             MsgServer.cpp    function                           sendFile     302      35       2
+             MsgServer.cpp    function                       generateHTML     341      42       5
+             MsgServer.cpp    function                           sendProc     387      50      10
+             MsgServer.cpp    function                             insert     400       1       1
+             MsgServer.cpp    function                        closeServer     442      22       3
+             MsgServer.cpp    function                   doPublishWithDep     468      50       9
+             MsgServer.cpp    function              startServerProcessing     521       3       2
+             MsgServer.cpp    function                              async     521       1       1
+             MsgServer.cpp    function                         serverProc     528      50      19
+             MsgServer.cpp      lambda                                [])     581      22       3
+
+                          Functions Exceeding Metric Limits and Public Data
+    ==============================================================================================
+                 file name        type                               name    line    size    cplx
+    -----------------------  ----------  ---------------------------------  ------  ------  ------
+             MsgServer.cpp    function                         serverProc     528      50      19
+
+
+
+    searched     6 dirs
+   processed     1 files

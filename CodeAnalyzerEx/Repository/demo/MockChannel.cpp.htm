@@ -1,0 +1,467 @@
+<!----------------------------------------------------------------------------
+MockChannel.cpp.htm - Generated HTML file of Project #3
+Published 04 April 2017
+Nupur Kulkarni, CSE687 - Object Oriented Design, Spring 2017
+
+Note:
+- Markup characters in the text part, enclosed in <pre>...</pre> have been 
+  replaced with escape sequences, e.g., < becomes &lt; and > becomes &gt;
+----------------------------------------------------------------------------->
+<html>
+<head>
+<link rel = stylesheet href = CSSFile.css>
+<script src= JSFile.js></script>
+</head>
+<body>
+<h3>MockChannel.cpp</h3>
+<hr />
+<div class=indent><h4>Dependencies:</h4><p><a href = Logger.cpp.htm> Logger.cpp</a></p><p><a href = MsgServer.cpp.htm> MsgServer.cpp</a></p><p><a href = HttpMessage.h.htm> HttpMessage.h</a></p><p><a href = HttpMessage.cpp.htm> HttpMessage.cpp</a></p><p><a href = SemiExp.cpp.htm> SemiExp.cpp</a></p><p><a href = Graph.h.htm> Graph.h</a></p><p><a href = MockChannel.h.htm> MockChannel.h</a></p><p><a href = Window.cpp.htm> Window.cpp</a></p><p><a href = Logger.h.htm> Logger.h</a></p><p><a href = Graph.cpp.htm> Graph.cpp</a></p><p><a href = ConvertToHtml.cpp.htm> ConvertToHtml.cpp</a></p><p><a href = TypeAnal.cpp.htm> TypeAnal.cpp</a></p></div>
+<hr />
+<pre>
+ ///////////////////////////////////////////////////////////////////////////// 
+ // MockChannel.cpp -                                                       // 
+ // Acts as sender as well as receiver for sending HTTP Messages to server  // 
+ // and receive HTTP messages from server and act according to it           // 
+ // Responsible for creation of mock channel                                // 
+ // ver 1.0                                                                 // 
+ // Language:    C++, Visual Studio 2015                                    // 
+ // Platform:    Lenovo Ideapad 500, Windows 10, AMD A10 x64&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;       // 
+ // Application: Remote Code Publisher, Project 4&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;       // 
+ //              CSE687 - Object Oriented Design&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;       // 
+ // Author:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Nupur Kulkarni, Syracuse University&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;       // 
+ //&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;nvkulkar@syr.edu&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;       // 
+ // Source:      Jim Fawcett, CST 2-187, Syracuse University&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;           // 
+ //              (315) 443-3948, jfawcett@twcny.rr.com&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;       // 
+ ///////////////////////////////////////////////////////////////////////////// 
+  
+ #define IN_DLL 
+ #include "MockChannel.h" 
+ #include "../Cpp11-BlockingQueue/Cpp11-BlockingQueue.h" 
+ #include "../HTTPMessage/HTTPMessage.h" 
+ #include "../Sockets/Sockets.h" 
+ #include "../FileSystem/FileSystem.h" 
+ #include "../Utilities/Utilities.h" 
+ #include &lt;string&gt; 
+ #include &lt;thread&gt; 
+ #include &lt;iostream&gt; 
+ #include &lt;future&gt; 
+ #include &lt;windows.h&gt; 
+ #include &lt;ShellAPI.h&gt; 
+  
+ using BQueue = Async::BlockingQueue &lt; Message &gt;; 
+ using namespace Utilities; 
+  
+ ///////////////////////////////////////////////////////////////////////////// 
+ // ServerHandler class 
+ // - Helper class to handle receiving of messages sent by the remote server 
+ // 
+ class ServerHandler 
+ {<button onClick = "OnClickDiv('div1', 'button1')" id = "button1">-</button><div id = "div1"> 
+ public: 
+ &nbsp;&nbsp;&nbsp;&nbsp;ServerHandler(Async::BlockingQueue&lt;std::string&gt;* pBQ) : clientRecvQ_(*pBQ) {} 
+ &nbsp;&nbsp;&nbsp;&nbsp;void operator()(Socket& socket_); 
+ private: 
+ &nbsp;&nbsp;&nbsp;&nbsp;bool recvFile(const std::string& filename, size_t fileSize, Socket& socket,const std::string& fromAddr); 
+ &nbsp;&nbsp;&nbsp;&nbsp;Async::BlockingQueue&lt;std::string&gt;& clientRecvQ_; 
+ &nbsp;&nbsp;&nbsp;&nbsp;void openRequestedWebPage(const std::string& toAddr,const std::string& filename); 
+ }; 
+</div><br>  
+  
+ // -- functor definiton for handling messages from the server -- // 
+  
+ void ServerHandler::operator()(Socket& socket_) 
+ {<button onClick = "OnClickDiv('div2', 'button2')" id = "button2">-</button><div id = "div2"> 
+ &nbsp;&nbsp;&nbsp;&nbsp;while (true) 
+<div id = "div3"> &nbsp;&nbsp;&nbsp;&nbsp;{ 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::string msg = socket_.recvString(); 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if (msg.empty()) 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;continue; 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;HTTPMessage httpMsg; 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;httpMsg.parseMessage(msg); 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if (httpMsg.command() == "publish") 
+<div id = "div4"> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{ 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::cout << ("\n\n  Receiving File : " + httpMsg.name() + "\n"); 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;for (int i = 0; i &lt; std::stoi(httpMsg.content()); i++) 
+<div id = "div5"> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{ 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;msg = socket_.recvString(); 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;HTTPMessage fTransHttpMsg; 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;fTransHttpMsg.parseMessage(msg); 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if (fTransHttpMsg.command() != "file_transfer") 
+<div id = "div6"> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{ 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::cout << ("\n\n  Check in error : did not receive file\n\n"); 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;break; 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;} 
+</div><br> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;recvFile(fTransHttpMsg.name(), fTransHttpMsg.getContentLength(), socket_,fTransHttpMsg.toAddress()); 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;} 
+</div><br> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;} 
+</div><br> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;clientRecvQ_.enQ(httpMsg.buildMessage()); 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if (httpMsg.command() == "open_home") 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;openRequestedWebPage(httpMsg.toAddress(),httpMsg.name()); 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if (httpMsg.command() == "quit") 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;break; 
+ &nbsp;&nbsp;&nbsp;&nbsp;} 
+</div><br> } 
+</div><br>  
+ // -- helper function to receive files during the file publish process -- // 
+  
+ bool ServerHandler::recvFile(const std::string& filename, size_t fileSize, Socket& socket, const std::string& toAddr) 
+ {<button onClick = "OnClickDiv('div7', 'button7')" id = "button7">-</button><div id = "div7"> 
+ &nbsp;&nbsp;&nbsp;&nbsp;std::string fqname; 
+ &nbsp;&nbsp;&nbsp;&nbsp;fqname = "../ClientDump/" + filename; 
+ &nbsp;&nbsp;&nbsp;&nbsp;FileSystem::File file(fqname); 
+ &nbsp;&nbsp;&nbsp;&nbsp;file.open(FileSystem::File::out, FileSystem::File::binary); 
+  
+ &nbsp;&nbsp;&nbsp;&nbsp;const size_t BlockSize = 2048; 
+ &nbsp;&nbsp;&nbsp;&nbsp;Socket::byte buffer[BlockSize]; 
+ &nbsp;&nbsp;&nbsp;&nbsp;size_t bytesToRead; 
+ &nbsp;&nbsp;&nbsp;&nbsp;if (!file.isGood()) 
+<div id = "div8"> &nbsp;&nbsp;&nbsp;&nbsp;{ 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;while (!(fileSize &lt; BlockSize)) 
+<div id = "div9"> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{ 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if (fileSize &gt; BlockSize) 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;bytesToRead = BlockSize; 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;else 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;bytesToRead = fileSize; 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;socket.recv(bytesToRead, buffer); 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;fileSize -= BlockSize; 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;} 
+</div><br> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;bytesToRead = fileSize; 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;socket.recv(bytesToRead, buffer); 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::cout << ("\n\n  can't open file " + fqname); 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;return false; 
+ &nbsp;&nbsp;&nbsp;&nbsp;} 
+</div><br> &nbsp;&nbsp;&nbsp;&nbsp;while (true) 
+<div id = "div10"> &nbsp;&nbsp;&nbsp;&nbsp;{ 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if (fileSize &gt; BlockSize) 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;bytesToRead = BlockSize; 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;else 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;bytesToRead = fileSize; 
+  
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;socket.recv(bytesToRead, buffer); 
+  
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FileSystem::Block blk; 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;for (size_t i = 0; i &lt; bytesToRead; ++i) 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;blk.push_back(buffer[i]); 
+  
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;file.putBlock(blk); 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if (fileSize &lt; BlockSize) 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;break; 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;fileSize -= BlockSize; 
+ &nbsp;&nbsp;&nbsp;&nbsp;} 
+</div><br> &nbsp;&nbsp;&nbsp;&nbsp;file.close(); 
+ &nbsp;&nbsp;&nbsp;&nbsp;return true; 
+ } 
+</div><br>  
+ // -- helper function to open browser for dispaying requested home page -- // 
+  
+ void ServerHandler::openRequestedWebPage(const std::string& toAddr,const std::string& filename) 
+ {<button onClick = "OnClickDiv('div11', 'button11')" id = "button11">-</button><div id = "div11"> 
+ &nbsp;&nbsp;&nbsp;&nbsp;std::string homeLink; 
+ &nbsp;&nbsp;&nbsp;&nbsp;homeLink = FileSystem::Path::getFullFileSpec("..//ClientDump//"+filename + ".htm"); 
+ &nbsp;&nbsp;&nbsp;&nbsp;std::wstring wHomeLink = std::wstring(homeLink.begin(), homeLink.end()); 
+ &nbsp;&nbsp;&nbsp;&nbsp;LPCWSTR sw = wHomeLink.c_str(); 
+ &nbsp;&nbsp;&nbsp;&nbsp;ShellExecute(0, 0, sw, 0, 0, SW_SHOW); 
+ } 
+</div><br>  
+ ///////////////////////////////////////////////////////////////////////////// 
+ // Sendr class 
+ // - accepts messages from client for consumption by MockChannel 
+ // 
+ class Sendr : public ISendr 
+ {<button onClick = "OnClickDiv('div12', 'button12')" id = "button12">-</button><div id = "div12"> 
+ public: 
+ &nbsp;&nbsp;&nbsp;&nbsp;void postMessage(const Message& msg); 
+ &nbsp;&nbsp;&nbsp;&nbsp;BQueue& queue(); 
+ private: 
+ &nbsp;&nbsp;&nbsp;&nbsp;BQueue sendQ_; 
+ }; 
+</div><br>  
+ void Sendr::postMessage(const Message& msg) 
+ {<button onClick = "OnClickDiv('div13', 'button13')" id = "button13">-</button><div id = "div13"> 
+ &nbsp;&nbsp;&nbsp;&nbsp;sendQ_.enQ(msg); 
+ } 
+</div><br>  
+ BQueue& Sendr::queue() { return sendQ_; } 
+  
+ ///////////////////////////////////////////////////////////////////////////// 
+ // Recvr class 
+ // - accepts messages from MockChanel for consumption by client 
+ // 
+ class Recvr : public IRecvr 
+ {<button onClick = "OnClickDiv('div14', 'button14')" id = "button14">-</button><div id = "div14"> 
+ public: 
+ &nbsp;&nbsp;&nbsp;&nbsp;Message getMessage(); 
+ &nbsp;&nbsp;&nbsp;&nbsp;BQueue& queue(); 
+ private: 
+ &nbsp;&nbsp;&nbsp;&nbsp;BQueue recvQ_; 
+ }; 
+</div><br>  
+ Message Recvr::getMessage() 
+ {<button onClick = "OnClickDiv('div15', 'button15')" id = "button15">-</button><div id = "div15"> 
+ &nbsp;&nbsp;&nbsp;&nbsp;return recvQ_.deQ(); 
+ } 
+</div><br>  
+ BQueue& Recvr::queue() { return recvQ_; } 
+  
+ ///////////////////////////////////////////////////////////////////////////// 
+ // MockChannel class 
+ // - reads messages from Sendr and writes messages to Recvr 
+ // 
+ class MockChannel : public IMockChannel 
+ {<button onClick = "OnClickDiv('div16', 'button16')" id = "button16">-</button><div id = "div16"> 
+ public: 
+ &nbsp;&nbsp;&nbsp;&nbsp;MockChannel(std::string addr, size_t port); 
+ &nbsp;&nbsp;&nbsp;&nbsp;void postMessage(Message msg); 
+ &nbsp;&nbsp;&nbsp;&nbsp;Message getMessage(); 
+ &nbsp;&nbsp;&nbsp;&nbsp;void start(); 
+ &nbsp;&nbsp;&nbsp;&nbsp;void stop(); 
+ &nbsp;&nbsp;&nbsp;&nbsp;bool connect(std::string addr, size_t port); 
+ &nbsp;&nbsp;&nbsp;&nbsp;void manualExecution(); 
+ private: 
+ &nbsp;&nbsp;&nbsp;&nbsp;bool startSender(); 
+ &nbsp;&nbsp;&nbsp;&nbsp;bool startReceiver(); 
+ &nbsp;&nbsp;&nbsp;&nbsp;bool sendProc(); 
+ &nbsp;&nbsp;&nbsp;&nbsp;bool sendFile(const std::string& fileName); 
+ &nbsp;&nbsp;&nbsp;&nbsp;bool waitForSender(); 
+ &nbsp;&nbsp;&nbsp;&nbsp;void done(); 
+ &nbsp;&nbsp;&nbsp;&nbsp;SocketSystem ss; 
+ &nbsp;&nbsp;&nbsp;&nbsp;SocketConnecter sc; 
+ &nbsp;&nbsp;&nbsp;&nbsp;SocketListener sl; 
+ &nbsp;&nbsp;&nbsp;&nbsp;ServerHandler sh; 
+ &nbsp;&nbsp;&nbsp;&nbsp;std::string address_; 
+ &nbsp;&nbsp;&nbsp;&nbsp;size_t port_; 
+ &nbsp;&nbsp;&nbsp;&nbsp;size_t serverPort_; 
+ &nbsp;&nbsp;&nbsp;&nbsp;std::vector&lt;std::string&gt; fileList_; 
+ &nbsp;&nbsp;&nbsp;&nbsp;Async::BlockingQueue&lt;std::string&gt; sendQ_; 
+ &nbsp;&nbsp;&nbsp;&nbsp;Async::BlockingQueue&lt;std::string&gt; recvQ_; 
+ &nbsp;&nbsp;&nbsp;&nbsp;std::future&lt;bool&gt; senderDone_; 
+ }; 
+</div><br>  
+ //----&lt; pass pointers to Sender and Receiver &gt;------------------------------- 
+  
+ MockChannel::MockChannel(std::string addr, size_t port) :ss(), address_(addr), port_(port), sl(port), sh(&recvQ_) {} 
+  
+ // -- enqueues a message for sending -- // 
+  
+ void MockChannel::postMessage(Message msg) 
+ {<button onClick = "OnClickDiv('div17', 'button17')" id = "button17">-</button><div id = "div17"> 
+ &nbsp;&nbsp;&nbsp;&nbsp;sendQ_.enQ(msg); 
+ } 
+</div><br>  
+ // -- gets a message that was received -- // 
+  
+ Message MockChannel::getMessage() 
+ {<button onClick = "OnClickDiv('div18', 'button18')" id = "button18">-</button><div id = "div18"> 
+ &nbsp;&nbsp;&nbsp;&nbsp;return recvQ_.deQ(); 
+ } 
+</div><br>  
+ // -- starts the send thread and socket listener -- // 
+  
+ void MockChannel::start() 
+ {<button onClick = "OnClickDiv('div19', 'button19')" id = "button19">-</button><div id = "div19"> 
+ &nbsp;&nbsp;&nbsp;&nbsp;startReceiver(); 
+ &nbsp;&nbsp;&nbsp;&nbsp;startSender(); 
+ } 
+</div><br> // -- stops the send thread, socket listener and receive threads -- // 
+  
+ void MockChannel::stop() 
+ {<button onClick = "OnClickDiv('div20', 'button20')" id = "button20">-</button><div id = "div20"> 
+ &nbsp;&nbsp;&nbsp;&nbsp;done(); 
+ &nbsp;&nbsp;&nbsp;&nbsp;waitForSender(); 
+ } 
+</div><br>  
+ // -- connects the CommChannel sender to the specified foreign IP address and port number -- // 
+  
+ bool MockChannel::connect(std::string addr, size_t port) 
+ {<button onClick = "OnClickDiv('div21', 'button21')" id = "button21">-</button><div id = "div21"> 
+ &nbsp;&nbsp;&nbsp;&nbsp;int tries = 0; 
+ &nbsp;&nbsp;&nbsp;&nbsp;while (!sc.connect(addr, port)) 
+<div id = "div22"> &nbsp;&nbsp;&nbsp;&nbsp;{ 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;tries++; 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::cout << "\n client attempt to connect - " << tries << "\n"; 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if (tries == 10) 
+<div id = "div23"> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{ 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::cout << "\n  could not connect\n"; 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;return false; 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;} 
+</div><br> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;::Sleep(100); 
+ &nbsp;&nbsp;&nbsp;&nbsp;} 
+</div><br> &nbsp;&nbsp;&nbsp;&nbsp;std::cout << ("\n  client connected to server - [" + addr + "]:" + std::to_string(port) + "\n"); 
+ &nbsp;&nbsp;&nbsp;&nbsp;serverPort_ = port; 
+ &nbsp;&nbsp;&nbsp;&nbsp;return true; 
+ } 
+</div><br>  
+ void MockChannel::manualExecution() 
+ {<button onClick = "OnClickDiv('div24', 'button24')" id = "button24">-</button><div id = "div24"> 
+ &nbsp;&nbsp;&nbsp;&nbsp;HTTPMessage msg; 
+ &nbsp;&nbsp;&nbsp;&nbsp;msg.command() = "upload"; 
+ &nbsp;&nbsp;&nbsp;&nbsp;msg.fromAddress() = ("[" + address_ + "]:" + std::to_string(port_)); 
+ &nbsp;&nbsp;&nbsp;&nbsp;msg.toAddress() = ("[localhost]:" + std::to_string(serverPort_)); 
+ &nbsp;&nbsp;&nbsp;&nbsp;msg.name() = "demo"; 
+ &nbsp;&nbsp;&nbsp;&nbsp;msg.content() = std::to_string(1); 
+ &nbsp;&nbsp;&nbsp;&nbsp;int index = 0; 
+ &nbsp;&nbsp;&nbsp;&nbsp;std::vector&lt;std::string&gt; dep; 
+ &nbsp;&nbsp;&nbsp;&nbsp;std::vector&lt;std::string&gt; files = FileSystem::Directory::getFiles("..//TestSuit//"); 
+ &nbsp;&nbsp;&nbsp;&nbsp;for (auto i:files) 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;dep.push_back(FileSystem::Path::getFullFileSpec("..//TestSuit//" + i)); 
+ &nbsp;&nbsp;&nbsp;&nbsp;msg.setBody(dep); 
+ &nbsp;&nbsp;&nbsp;&nbsp;msg.setContentLength(dep.size()); 
+ &nbsp;&nbsp;&nbsp;&nbsp;postMessage(msg.buildMessage()); 
+ } 
+</div><br>  
+ // -- starts the client send thread -- // 
+  
+ bool MockChannel::startSender() 
+ {<button onClick = "OnClickDiv('div25', 'button25')" id = "button25">-</button><div id = "div25"> 
+ &nbsp;&nbsp;&nbsp;&nbsp;senderDone_ = std::async(std::launch::async, [&]()-&gt; bool {return sendProc(); }); 
+ &nbsp;&nbsp;&nbsp;&nbsp;return true; 
+ } 
+</div><br>  
+ // -- starts the socket listener to receive messages -- // 
+  
+ bool MockChannel::startReceiver() 
+ {<button onClick = "OnClickDiv('div26', 'button26')" id = "button26">-</button><div id = "div26"> 
+ &nbsp;&nbsp;&nbsp;&nbsp;try 
+<div id = "div27"> &nbsp;&nbsp;&nbsp;&nbsp;{ 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;sl.start(sh); 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;return true; 
+ &nbsp;&nbsp;&nbsp;&nbsp;} 
+</div><br> &nbsp;&nbsp;&nbsp;&nbsp;catch (std::exception ex) 
+<div id = "div28"> &nbsp;&nbsp;&nbsp;&nbsp;{ 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::cout << "\n  Exception in startReceiver() caught : " << ex.what() << "\n\n"; 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;return false; 
+ &nbsp;&nbsp;&nbsp;&nbsp;} 
+</div><br> } 
+</div><br>  
+ // -- waits for the send thread to finish its processing -- // 
+  
+ bool MockChannel::waitForSender() 
+ {<button onClick = "OnClickDiv('div29', 'button29')" id = "button29">-</button><div id = "div29"> 
+ &nbsp;&nbsp;&nbsp;&nbsp;return senderDone_.get(); 
+ } 
+</div><br>  
+ // -- enqueues a quit message to terminate the send thread processing and to notify the server that client has finished -- // 
+  
+ void MockChannel::done() 
+ {<button onClick = "OnClickDiv('div30', 'button30')" id = "button30">-</button><div id = "div30"> 
+ &nbsp;&nbsp;&nbsp;&nbsp;HTTPMessage msg; 
+ &nbsp;&nbsp;&nbsp;&nbsp;msg.command() = "quit"; 
+ &nbsp;&nbsp;&nbsp;&nbsp;msg.fromAddress() = ("[" + address_ + "]:" + std::to_string(port_)); 
+ &nbsp;&nbsp;&nbsp;&nbsp;msg.toAddress() = ("[localhost]:" + std::to_string(serverPort_)); 
+ &nbsp;&nbsp;&nbsp;&nbsp;msg.name() = "empty"; 
+ &nbsp;&nbsp;&nbsp;&nbsp;msg.content() = "no_content"; 
+ &nbsp;&nbsp;&nbsp;&nbsp;std::vector&lt;std::string&gt; vec = {}; 
+ &nbsp;&nbsp;&nbsp;&nbsp;msg.setBody(vec); 
+ &nbsp;&nbsp;&nbsp;&nbsp;sendQ_.enQ(msg.buildMessage()); 
+ } 
+</div><br>  
+ // -- send thread processing -- // 
+  
+ bool MockChannel::sendProc() 
+ {<button onClick = "OnClickDiv('div31', 'button31')" id = "button31">-</button><div id = "div31"> 
+ &nbsp;&nbsp;&nbsp;&nbsp;while (true) 
+<div id = "div32"> &nbsp;&nbsp;&nbsp;&nbsp;{ 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::string msg = sendQ_.deQ(); 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;HTTPMessage hMsg; 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;hMsg.parseMessage(msg); 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if (hMsg.command() == "upload" && hMsg.name() != "") //if command is upload what actions to be taken by client 
+<div id = "div33"> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{ 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::vector&lt;std::string&gt; files_; 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;files_ = hMsg.getBody(); 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::string pkg_name; 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;for (auto file : files_) 
+<div id = "div34"> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{ 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;sc.sendString(hMsg.buildMessage()); 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::cout << ("\n\n  Sending message from sendProc - file name : " + file.substr(file.find_last_of('\\')+1) + "\n"); 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;sendFile(file); 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;} 
+</div><br> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;} 
+</div><br> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;else 
+<div id = "div35"> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{ 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;sc.sendString(hMsg.buildMessage()); 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;} 
+</div><br> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if (hMsg.command() == "quit") 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;break; 
+ &nbsp;&nbsp;&nbsp;&nbsp;} 
+</div><br> &nbsp;&nbsp;&nbsp;&nbsp;return true; 
+ } 
+</div><br>  
+ // -- Helper function to send files for upload  -- // 
+  
+ bool MockChannel::sendFile(const std::string& fileName) 
+ {<button onClick = "OnClickDiv('div36', 'button36')" id = "button36">-</button><div id = "div36"> 
+ &nbsp;&nbsp;&nbsp;&nbsp;// assumes that socket is connected 
+  
+ &nbsp;&nbsp;&nbsp;&nbsp;FileSystem::FileInfo fi(fileName); 
+ &nbsp;&nbsp;&nbsp;&nbsp;size_t fileSize = fi.size(); 
+ &nbsp;&nbsp;&nbsp;&nbsp;std::string sizeString = Converter&lt;size_t&gt;::toString(fileSize); 
+ &nbsp;&nbsp;&nbsp;&nbsp;FileSystem::File file(fileName); 
+ &nbsp;&nbsp;&nbsp;&nbsp;file.open(FileSystem::File::in, FileSystem::File::binary); 
+ &nbsp;&nbsp;&nbsp;&nbsp;if (!file.isGood()) 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;return false; 
+  
+ &nbsp;&nbsp;&nbsp;&nbsp;HTTPMessage msg; 
+ &nbsp;&nbsp;&nbsp;&nbsp;msg.command() = "file_transfer"; 
+ &nbsp;&nbsp;&nbsp;&nbsp;msg.fromAddress() = ("[" + address_ + "]:" + std::to_string(port_)); 
+ &nbsp;&nbsp;&nbsp;&nbsp;msg.toAddress() = ("[localhost]:" + std::to_string(serverPort_)); 
+ &nbsp;&nbsp;&nbsp;&nbsp;msg.name() = fi.name(); 
+ &nbsp;&nbsp;&nbsp;&nbsp;msg.content() = "size"; 
+ &nbsp;&nbsp;&nbsp;&nbsp;msg.contentLength() = sizeString; 
+ &nbsp;&nbsp;&nbsp;&nbsp;sc.sendString(msg.buildMessage()); 
+ &nbsp;&nbsp;&nbsp;&nbsp;const size_t BlockSize = 2048; 
+ &nbsp;&nbsp;&nbsp;&nbsp;Socket::byte buffer[BlockSize]; 
+ &nbsp;&nbsp;&nbsp;&nbsp;while (true) 
+<div id = "div37"> &nbsp;&nbsp;&nbsp;&nbsp;{ 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FileSystem::Block blk = file.getBlock(BlockSize); 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if (blk.size() == 0) 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;break; 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;for (size_t i = 0; i &lt; blk.size(); ++i) 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;buffer[i] = blk[i]; 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;sc.send(blk.size(), buffer); 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if (!file.isGood()) 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;break; 
+ &nbsp;&nbsp;&nbsp;&nbsp;} 
+</div><br> &nbsp;&nbsp;&nbsp;&nbsp;file.close(); 
+ &nbsp;&nbsp;&nbsp;&nbsp;return true; 
+ } 
+</div><br>  
+ //----&lt; factory functions &gt;-------------------------------------------------- 
+  
+ IMockChannel* ObjectFactory::createMockChannel(std::string addr, size_t port) 
+ {<button onClick = "OnClickDiv('div38', 'button38')" id = "button38">-</button><div id = "div38"> 
+ &nbsp;&nbsp;&nbsp;&nbsp;return new MockChannel(addr, port); 
+ } 
+</div><br>  
+ #ifdef TEST_MOCKCHANNEL 
+  
+ //----&lt; test stub &gt;---------------------------------------------------------- 
+  
+ int main() 
+ {<button onClick = "OnClickDiv('div39', 'button39')" id = "button39">-</button><div id = "div39"> 
+ &nbsp;&nbsp;&nbsp;&nbsp;ObjectFactory objFact; 
+ &nbsp;&nbsp;&nbsp;&nbsp;ISendr* pSendr = objFact.createSendr(); 
+ &nbsp;&nbsp;&nbsp;&nbsp;IRecvr* pRecvr = objFact.createRecvr(); 
+ &nbsp;&nbsp;&nbsp;&nbsp;IMockChannel* pMockChannel = objFact.createMockChannel(pSendr, pRecvr); 
+ &nbsp;&nbsp;&nbsp;&nbsp;pMockChannel-&gt;start(); 
+ &nbsp;&nbsp;&nbsp;&nbsp;pSendr-&gt;postMessage("Hello World"); 
+ &nbsp;&nbsp;&nbsp;&nbsp;pSendr-&gt;postMessage("CSE687 - Object Oriented Design"); 
+ &nbsp;&nbsp;&nbsp;&nbsp;Message msg = pRecvr-&gt;getMessage(); 
+ &nbsp;&nbsp;&nbsp;&nbsp;std::cout << "\n  received message = \"" << msg << "\""; 
+ &nbsp;&nbsp;&nbsp;&nbsp;msg = pRecvr-&gt;getMessage(); 
+ &nbsp;&nbsp;&nbsp;&nbsp;std::cout << "\n  received message = \"" << msg << "\""; 
+ &nbsp;&nbsp;&nbsp;&nbsp;pSendr-&gt;postMessage("stopping"); 
+ &nbsp;&nbsp;&nbsp;&nbsp;msg = pRecvr-&gt;getMessage(); 
+ &nbsp;&nbsp;&nbsp;&nbsp;std::cout << "\n  received message = \"" << msg << "\""; 
+ &nbsp;&nbsp;&nbsp;&nbsp;pMockChannel-&gt;stop(); 
+ &nbsp;&nbsp;&nbsp;&nbsp;pSendr-&gt;postMessage("quit"); 
+ &nbsp;&nbsp;&nbsp;&nbsp;std::cin.get(); 
+ } 
+</div><br> #endif 
+  
+  
+  
+
+</pre>
+</body>
+</html>

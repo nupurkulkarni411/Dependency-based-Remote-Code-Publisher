@@ -1,0 +1,29 @@
+
+                                             CodeAnalysis
+    ==============================================================================================
+     Tue Apr  4 23:21:57 2017
+     Path: "C:\Users\lenovo\Desktop\ood check\CodeAnalyzerEx\COnvertToHtml"
+     Args: ConvertToHtml.h, /m, /r, /f
+                                                                               
+           Code Metrics - Start Line, Size (lines/code), and Complexity (number of scopes)
+    ==============================================================================================
+
+                 file name        type                               name    line    size    cplx
+    -----------------------  ----------  ---------------------------------  ------  ------  ------
+                             namespace                   Global Namespace       1       1       4
+
+                 file name        type                               name    line    size    cplx
+    -----------------------  ----------  ---------------------------------  ------  ------  ------
+           ConvertToHtml.h   namespace                       CodeAnalysis      65      35       3
+           ConvertToHtml.h       class                      ConvertToHtml      67      31       2
+           ConvertToHtml.h    function                      ConvertToHtml      79       3       1
+
+                          Functions Exceeding Metric Limits and Public Data
+    ==============================================================================================
+                 file name        type                               name    line    size    cplx
+    -----------------------  ----------  ---------------------------------  ------  ------  ------
+
+
+
+    searched     4 dirs
+   processed     1 files

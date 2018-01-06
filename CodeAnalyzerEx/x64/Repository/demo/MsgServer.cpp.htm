@@ -1,0 +1,624 @@
+<!----------------------------------------------------------------------------
+MsgServer.cpp.htm - Generated HTML file of Project #3
+Published 04 April 2017
+Nupur Kulkarni, CSE687 - Object Oriented Design, Spring 2017
+
+Note:
+- Markup characters in the text part, enclosed in <pre>...</pre> have been 
+  replaced with escape sequences, e.g., < becomes &lt; and > becomes &gt;
+----------------------------------------------------------------------------->
+<html>
+<head>
+<link rel = stylesheet href = CSSFile.css>
+<script src= JSFile.js></script>
+</head>
+<body>
+<h3>MsgServer.cpp</h3>
+<hr />
+<div class=indent><h4>Dependencies:</h4><p><a href = MockChannel.cpp.htm> MockChannel.cpp</a></p><p><a href = HttpMessage.h.htm> HttpMessage.h</a></p><p><a href = HttpMessage.cpp.htm> HttpMessage.cpp</a></p><p><a href = TypeAnal.cpp.htm> TypeAnal.cpp</a></p><p><a href = TypeAnal.h.htm> TypeAnal.h</a></p><p><a href = DepAnal.h.htm> DepAnal.h</a></p><p><a href = ConvertToHtml.h.htm> ConvertToHtml.h</a></p><p><a href = ConvertToHtml.cpp.htm> ConvertToHtml.cpp</a></p></div>
+<hr />
+<pre>
+ /////////////////////////////////////////////////////////////////////// 
+ // RemoteRepository.cpp - Server that implements the remote&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; // 
+ //&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;repository functionality&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; // 
+ // Platform:    Lenovo Ideapad 500, Windows 10, AMD A10 x64&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; // 
+ // Application: Remote Code Publisher, Project 4&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; // 
+ //              CSE687 - Object Oriented Design&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; // 
+ // Author:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Nupur Kulkarni, Syracuse University&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; // 
+ //&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;nvkulkar@syr.edu&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; // 
+ // Source:      Jim Fawcett, CST 2-187, Syracuse University&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;     // 
+ //              (315) 443-3948, jfawcett@twcny.rr.com&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; // 
+ /////////////////////////////////////////////////////////////////////// 
+ /* 
+ * Package Operations: 
+ * ------------------- 
+ * This package provides a RepositoryServer class that implements all the 
+ * functionalities required of the remote code publisher server, as 
+ * described in the requirements and purpose section. 
+ * 
+ * This package also has a ClientHandler class, which is a helper class 
+ * for the server. It handles receiving of messages sent by remote clients. 
+ * 
+ * 
+ * Public Interface: 
+ * -------------------- 
+ * startSender()&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;: starts the server send processing to reply to client requests 
+ * startListener()&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;: starts the server socket Listener to receive client requests 
+ * startServerProcessing()&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;: starts the processing of received requests 
+ * closeServer()&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;: shuts the server down 
+ * 
+ * Build Process: 
+ * -------------- 
+ * Required Files: 
+ *   BlockingQueue.h, BlockingQueue.cpp, Utilities.h, Utilities.cpp 
+ *   Sockets.h, Sockets.cpp, Logger.h, Logger.cpp, 
+ *   HTTPMessage.h, HTTPMessage.cpp, FileMgr.h, IFileMgr.h, 
+ *   FileSystem.h, FileSystem.cpp 
+ * 
+ * Build Command: devenv RemoteRepository.sln /rebuild debug 
+ * 
+ * Maintenance History: 
+ * -------------------- 
+ * ver 1.0 : 30 Apr 2016 
+ * - first release 
+ */ 
+  
+  
+ #include "../Sockets/Sockets.h" 
+ #include "../Logger/Logger.h" 
+ #include "../Utilities/Utilities.h" 
+ #include "../FileSystem/FileSystem.h" 
+ #include "../HTTPMessage/HTTPMessage.h" 
+ #include &lt;unordered_map&gt; 
+ #include &lt;future&gt; 
+ #include &lt;string&gt; 
+ #include &lt;iostream&gt; 
+ #include &lt;algorithm&gt; 
+ #include "../TypeAnalysis/TypeAnal.h" 
+ #include "../DependancyAnalysis/DepAnal.h" 
+ #include "../COnvertToHtml/ConvertToHtml.h" 
+ #include "../Cpp11-BlockingQueue/Cpp11-BlockingQueue.h" 
+ #include "../Analyzer/Executive.h" 
+  
+ using Show = Logging::StaticLogger&lt;1&gt;; 
+ using namespace Utilities; 
+ using namespace CodeAnalysis; 
+ using namespace Async; 
+  
+ ///////////////////////////////////////////////////////////////////////////// 
+ // ClientHandler class 
+ // - Helper class to handle receiving of messages sent by remote clients 
+ // 
+ class ClientHandler 
+ {<button onClick = "OnClickDiv('div1', 'button1')" id = "button1">-</button><div id = "div1"> 
+ public: 
+ &nbsp;&nbsp;&nbsp;&nbsp;ClientHandler(BlockingQueue&lt;std::string&gt;* pBQ) : serverRecvQ(*pBQ) {} 
+ &nbsp;&nbsp;&nbsp;&nbsp;void operator()(Socket& socket_); 
+ private: 
+ &nbsp;&nbsp;&nbsp;&nbsp;bool recvFile(const std::string& folder, const std::string& filename, size_t fileSize, Socket& socket); 
+ &nbsp;&nbsp;&nbsp;&nbsp;BlockingQueue&lt;std::string&gt;& serverRecvQ; 
+ }; 
+</div><br>  
+ // -- functor definiton for handling messages from clients -- // 
+  
+ void ClientHandler::operator()(Socket& socket_) 
+ {<button onClick = "OnClickDiv('div2', 'button2')" id = "button2">-</button><div id = "div2"> 
+ &nbsp;&nbsp;&nbsp;&nbsp;while (true) 
+<div id = "div3"> &nbsp;&nbsp;&nbsp;&nbsp;{ 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::string msg = socket_.recvString(); 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if (msg.empty()) 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;continue; 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;HTTPMessage httpMsg; 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;httpMsg.parseMessage(msg); 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::cout << ("\n  server received message : " + httpMsg.command() + "  from client : " + httpMsg.fromAddress() + "\n"); 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if (httpMsg.command() == "upload") 
+<div id = "div4"> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{ 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;for (int i = 0; i &lt; std::stoi(httpMsg.content()); i++) 
+<div id = "div5"> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{ 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;msg = socket_.recvString(); 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;HTTPMessage fTransHttpMsg; 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;fTransHttpMsg.parseMessage(msg); 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::string tempDir = "../Repository/" + httpMsg.name(); 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FileSystem::Directory::create(tempDir); 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if (fTransHttpMsg.command() != "file_transfer") 
+<div id = "div6"> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{ 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Show::write("\n\n  Check in error : did not receive file\n\n"); 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;break; 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;} 
+</div><br> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;recvFile(httpMsg.name(), fTransHttpMsg.name(), fTransHttpMsg.getContentLength(), socket_); 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;} 
+</div><br> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;} 
+</div><br> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;serverRecvQ.enQ(httpMsg.buildMessage()); 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if (httpMsg.command() == "quit") 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;break; 
+ &nbsp;&nbsp;&nbsp;&nbsp;} 
+</div><br> } 
+</div><br> // -- helper function to receive files during the file publish process -- // 
+  
+ bool ClientHandler::recvFile(const std::string& folder, const std::string& filename, size_t fileSize, Socket& socket) 
+ {<button onClick = "OnClickDiv('div7', 'button7')" id = "button7">-</button><div id = "div7"> 
+ &nbsp;&nbsp;&nbsp;&nbsp;std::string fqname = "../Repository/" + folder + "/" + filename; 
+ &nbsp;&nbsp;&nbsp;&nbsp;FileSystem::File file(fqname); 
+ &nbsp;&nbsp;&nbsp;&nbsp;file.open(FileSystem::File::out, FileSystem::File::binary); 
+  
+ &nbsp;&nbsp;&nbsp;&nbsp;const size_t BlockSize = 2048; 
+ &nbsp;&nbsp;&nbsp;&nbsp;Socket::byte buffer[BlockSize]; 
+ &nbsp;&nbsp;&nbsp;&nbsp;size_t bytesToRead; 
+ &nbsp;&nbsp;&nbsp;&nbsp;if (!file.isGood()) 
+<div id = "div8"> &nbsp;&nbsp;&nbsp;&nbsp;{ 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;while (!(fileSize &lt; BlockSize)) 
+<div id = "div9"> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{ 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if (fileSize &gt; BlockSize) 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;bytesToRead = BlockSize; 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;else 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;bytesToRead = fileSize; 
+  
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;socket.recv(bytesToRead, buffer); 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;fileSize -= BlockSize; 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;} 
+</div><br> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;bytesToRead = fileSize; 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;socket.recv(bytesToRead, buffer); 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Show::write("\n\n  can't open file " + fqname); 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;return false; 
+ &nbsp;&nbsp;&nbsp;&nbsp;} 
+</div><br> &nbsp;&nbsp;&nbsp;&nbsp;while (true) 
+<div id = "div10"> &nbsp;&nbsp;&nbsp;&nbsp;{ 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if (fileSize &gt; BlockSize) 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;bytesToRead = BlockSize; 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;else 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;bytesToRead = fileSize; 
+  
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;socket.recv(bytesToRead, buffer); 
+  
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FileSystem::Block blk; 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;for (size_t i = 0; i &lt; bytesToRead; ++i) 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;blk.push_back(buffer[i]); 
+  
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;file.putBlock(blk); 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if (fileSize &lt; BlockSize) 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;break; 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;fileSize -= BlockSize; 
+ &nbsp;&nbsp;&nbsp;&nbsp;} 
+</div><br> &nbsp;&nbsp;&nbsp;&nbsp;file.close(); 
+ &nbsp;&nbsp;&nbsp;&nbsp;return true; 
+ } 
+</div><br> /////////////////////////////////////////////////////////////////////////////////// 
+ // RepositoryServer class 
+ // - Helper class for handling client's requests and sending appropriate responses 
+ // 
+ class RepositoryServer 
+ {<button onClick = "OnClickDiv('div11', 'button11')" id = "button11">-</button><div id = "div11"> 
+ public: 
+ &nbsp;&nbsp;&nbsp;&nbsp;using File = std::string; 
+ &nbsp;&nbsp;&nbsp;&nbsp;using Files = std::vector&lt;File&gt;; 
+ &nbsp;&nbsp;&nbsp;&nbsp;RepositoryServer(std::string addr, size_t port); 
+ &nbsp;&nbsp;&nbsp;&nbsp;bool startListener(); 
+ &nbsp;&nbsp;&nbsp;&nbsp;void startServerProcessing(); 
+ &nbsp;&nbsp;&nbsp;&nbsp;bool startSender(); 
+ &nbsp;&nbsp;&nbsp;&nbsp;bool closeServer(); 
+ private: 
+ &nbsp;&nbsp;&nbsp;&nbsp;HTTPMessage getMessage(); 
+ &nbsp;&nbsp;&nbsp;&nbsp;void postMessage(std::string msg); 
+ &nbsp;&nbsp;&nbsp;&nbsp;bool connect(std::string addr, size_t port, SocketConnecter& sc); 
+ &nbsp;&nbsp;&nbsp;&nbsp;void doPublishWithDep(std::vector&lt;std::string&gt; visited, std::string fileName, std::string toAddr); 
+ &nbsp;&nbsp;&nbsp;&nbsp;std::vector&lt;std::string&gt; getDependencies(std::string pkgName, std::string filename); 
+ &nbsp;&nbsp;&nbsp;&nbsp;bool serverProc(); 
+ &nbsp;&nbsp;&nbsp;&nbsp;bool sendProc(); 
+ &nbsp;&nbsp;&nbsp;&nbsp;bool sendFile(const std::string& fileName, SocketConnecter& sc, std::string fromAddr, std::string toAddr); 
+ &nbsp;&nbsp;&nbsp;&nbsp;bool closeSender_ = false; 
+ &nbsp;&nbsp;&nbsp;&nbsp;bool closeServer_ = false; 
+ &nbsp;&nbsp;&nbsp;&nbsp;SocketSystem ss; 
+ &nbsp;&nbsp;&nbsp;&nbsp;SocketListener sl; 
+ &nbsp;&nbsp;&nbsp;&nbsp;std::string address_; 
+ &nbsp;&nbsp;&nbsp;&nbsp;size_t port_; 
+ &nbsp;&nbsp;&nbsp;&nbsp;std::vector&lt;std::string&gt; fileList_; 
+ &nbsp;&nbsp;&nbsp;&nbsp;BlockingQueue&lt;std::string&gt; sendQ_; 
+ &nbsp;&nbsp;&nbsp;&nbsp;BlockingQueue&lt;std::string&gt; recvQ_; 
+ &nbsp;&nbsp;&nbsp;&nbsp;std::unordered_map&lt;std::string, SocketConnecter&gt; connections_; 
+ &nbsp;&nbsp;&nbsp;&nbsp;std::future&lt;bool&gt; senderDone_; 
+ &nbsp;&nbsp;&nbsp;&nbsp;std::future&lt;bool&gt; serverDone_; 
+ &nbsp;&nbsp;&nbsp;&nbsp;ClientHandler ch; 
+ &nbsp;&nbsp;&nbsp;&nbsp;void generateHTML(HTTPMessage); 
+ }; 
+</div><br>  
+  
+ // -- reads file and returns file names of dependant files -- // 
+  
+ std::vector&lt;std::string&gt; RepositoryServer::getDependencies(std::string pkgName,std::string filename) 
+ {<button onClick = "OnClickDiv('div12', 'button12')" id = "button12">-</button><div id = "div12"> 
+ &nbsp;&nbsp;&nbsp;&nbsp;std::string htmPath = FileSystem::Path::getFullFileSpec("../Repository/" + pkgName + "/" + filename + ".htm"); 
+ &nbsp;&nbsp;&nbsp;&nbsp;std::vector&lt;std::string&gt; result; 
+ &nbsp;&nbsp;&nbsp;&nbsp;try 
+<div id = "div13"> &nbsp;&nbsp;&nbsp;&nbsp;{ 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::ifstream in(htmPath); 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::string line,file; 
+<div id = "div14"> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;while (in.good()) { 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::getline(in, line); 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;file = file + line + "\n"; 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;} 
+</div><br> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;file = file.substr(file.find("Dependencies:")); 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;file = file.substr(0, file.find("&lt;/div&gt;")); 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;while (file.find("=") != std::string::npos) 
+<div id = "div15"> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{ 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::string file1 = file; 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::string filename = file.substr(file.find("=") + 2); 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::string filename1; 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;for (int i = 0; filename[i] != '&gt;'; i++) 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;filename1 = filename1 + filename[i]; 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;result.push_back(filename1); 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;file = file1.substr(file1.find(("&lt;/a&gt;")) + 1); 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;} 
+</div><br> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;return result; 
+ &nbsp;&nbsp;&nbsp;&nbsp;} 
+</div><br> &nbsp;&nbsp;&nbsp;&nbsp;catch (std::exception ex) 
+<div id = "div16"> &nbsp;&nbsp;&nbsp;&nbsp;{ 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::cout << "\n\n  **  Could not read file to send, exception caught : " << ex.what(); 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;return result; 
+ &nbsp;&nbsp;&nbsp;&nbsp;} 
+</div><br> } 
+</div><br>  
+ // -- Construct the server with the specified IP address and port number -- // 
+  
+ RepositoryServer::RepositoryServer(std::string addr, size_t port) : ss(), address_(addr), port_(port), sl(port), ch(&recvQ_) {} 
+  
+ bool RepositoryServer::connect(std::string addr, size_t port, SocketConnecter& sc) 
+ {<button onClick = "OnClickDiv('div17', 'button17')" id = "button17">-</button><div id = "div17"> 
+ &nbsp;&nbsp;&nbsp;&nbsp;int tries = 0; 
+ &nbsp;&nbsp;&nbsp;&nbsp;while (!sc.connect(addr, port)) 
+<div id = "div18"> &nbsp;&nbsp;&nbsp;&nbsp;{ 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;tries++; 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::cout << "\n server attempt to connect - " << tries << "\n"; 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if (tries == 10) 
+<div id = "div19"> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{ 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::cout << "\n  could not connect\n"; 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;return false; 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;} 
+</div><br> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;::Sleep(100); 
+ &nbsp;&nbsp;&nbsp;&nbsp;} 
+</div><br> &nbsp;&nbsp;&nbsp;&nbsp;std::cout << "\n  connected to client - [" << addr << "]:" << port << "  \n"; 
+ &nbsp;&nbsp;&nbsp;&nbsp;return true; 
+ } 
+</div><br>  
+ // -- start the server listener to accept client requests -- // 
+  
+ bool RepositoryServer::startListener() 
+ {<button onClick = "OnClickDiv('div20', 'button20')" id = "button20">-</button><div id = "div20"> 
+ &nbsp;&nbsp;&nbsp;&nbsp;sl.start(ch); 
+ &nbsp;&nbsp;&nbsp;&nbsp;return true; 
+ } 
+</div><br>  
+ // -- dequeue a received messagge for processing -- // 
+  
+ HTTPMessage RepositoryServer::getMessage() 
+ {<button onClick = "OnClickDiv('div21', 'button21')" id = "button21">-</button><div id = "div21"> 
+ &nbsp;&nbsp;&nbsp;&nbsp;HTTPMessage httpMsg; 
+ &nbsp;&nbsp;&nbsp;&nbsp;std::string msg = recvQ_.deQ(); 
+ &nbsp;&nbsp;&nbsp;&nbsp;httpMsg.parseMessage(msg); 
+ &nbsp;&nbsp;&nbsp;&nbsp;return httpMsg; 
+ } 
+</div><br>  
+ // -- enqueue a message for sending -- // 
+  
+ void RepositoryServer::postMessage(std::string msg) 
+ {<button onClick = "OnClickDiv('div22', 'button22')" id = "button22">-</button><div id = "div22"> 
+ &nbsp;&nbsp;&nbsp;&nbsp;HTTPMessage hmsg; 
+ &nbsp;&nbsp;&nbsp;&nbsp;hmsg.parseMessage(msg); 
+ &nbsp;&nbsp;&nbsp;&nbsp;sendQ_.enQ(msg); 
+ } 
+</div><br>  
+ // -- start the send thread of the server -- // 
+  
+ bool RepositoryServer::startSender() 
+ {<button onClick = "OnClickDiv('div23', 'button23')" id = "button23">-</button><div id = "div23"> 
+ &nbsp;&nbsp;&nbsp;&nbsp;senderDone_ = std::async(std::launch::async, [&]()-&gt; bool {return sendProc(); }); 
+ &nbsp;&nbsp;&nbsp;&nbsp;return true; 
+ } 
+</div><br>  
+ // -- helper function to send files for publish request -- // 
+  
+ bool RepositoryServer::sendFile(const std::string& fileName, SocketConnecter& sc, std::string fromAddr, std::string toAddr) 
+ {<button onClick = "OnClickDiv('div24', 'button24')" id = "button24">-</button><div id = "div24"> 
+ &nbsp;&nbsp;&nbsp;&nbsp;// assumes that socket is connected 
+  
+ &nbsp;&nbsp;&nbsp;&nbsp;FileSystem::FileInfo fi(fileName); 
+ &nbsp;&nbsp;&nbsp;&nbsp;size_t fileSize = fi.size(); 
+ &nbsp;&nbsp;&nbsp;&nbsp;std::string sizeString = Converter&lt;size_t&gt;::toString(fileSize); 
+ &nbsp;&nbsp;&nbsp;&nbsp;FileSystem::File file(fileName); 
+ &nbsp;&nbsp;&nbsp;&nbsp;file.open(FileSystem::File::in, FileSystem::File::binary); 
+ &nbsp;&nbsp;&nbsp;&nbsp;if (!file.isGood()) 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;return false; 
+  
+ &nbsp;&nbsp;&nbsp;&nbsp;HTTPMessage msg; 
+ &nbsp;&nbsp;&nbsp;&nbsp;msg.command() = "file_transfer"; 
+ &nbsp;&nbsp;&nbsp;&nbsp;msg.fromAddress() = fromAddr; 
+ &nbsp;&nbsp;&nbsp;&nbsp;msg.toAddress() = toAddr; 
+ &nbsp;&nbsp;&nbsp;&nbsp;msg.name() = fi.name(); 
+ &nbsp;&nbsp;&nbsp;&nbsp;msg.content() = "size"; 
+ &nbsp;&nbsp;&nbsp;&nbsp;msg.contentLength() = sizeString; 
+ &nbsp;&nbsp;&nbsp;&nbsp;sc.sendString(msg.buildMessage()); 
+ &nbsp;&nbsp;&nbsp;&nbsp;const size_t BlockSize = 2048; 
+ &nbsp;&nbsp;&nbsp;&nbsp;Socket::byte buffer[BlockSize]; 
+ &nbsp;&nbsp;&nbsp;&nbsp;while (true) 
+<div id = "div25"> &nbsp;&nbsp;&nbsp;&nbsp;{ 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FileSystem::Block blk = file.getBlock(BlockSize); 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if (blk.size() == 0) 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;break; 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;for (size_t i = 0; i &lt; blk.size(); ++i) 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;buffer[i] = blk[i]; 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;sc.send(blk.size(), buffer); 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if (!file.isGood()) 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;break; 
+ &nbsp;&nbsp;&nbsp;&nbsp;} 
+</div><br> &nbsp;&nbsp;&nbsp;&nbsp;file.close(); 
+ &nbsp;&nbsp;&nbsp;&nbsp;return true; 
+ } 
+</div><br>  
+ // -- helper function for generating HTML pages of files which are present in repository -- // 
+  
+ void RepositoryServer::generateHTML(HTTPMessage hMsg) 
+ {<button onClick = "OnClickDiv('div26', 'button26')" id = "button26">-</button><div id = "div26"> 
+ &nbsp;&nbsp;&nbsp;&nbsp;std::string dfpath = FileSystem::Path::getFullFileSpec("../Repository"); 
+ &nbsp;&nbsp;&nbsp;&nbsp;std::vector&lt;std::string&gt; patterns = { "*.h","*.cpp" }; 
+ &nbsp;&nbsp;&nbsp;&nbsp;CodeAnalysisExecutive exec; 
+ &nbsp;&nbsp;&nbsp;&nbsp;exec.setPath(dfpath); 
+ &nbsp;&nbsp;&nbsp;&nbsp;exec.setPattern(patterns); 
+ &nbsp;&nbsp;&nbsp;&nbsp;exec.setDisplayModes(); 
+ &nbsp;&nbsp;&nbsp;&nbsp;exec.getSourceFiles(); 
+ &nbsp;&nbsp;&nbsp;&nbsp;exec.processSourceCode(true); 
+ &nbsp;&nbsp;&nbsp;&nbsp;TypeAnal ta; 
+ &nbsp;&nbsp;&nbsp;&nbsp;ta.doTypeAnal();   //type analysis 
+ &nbsp;&nbsp;&nbsp;&nbsp;DepAnal depAnal; 
+ &nbsp;&nbsp;&nbsp;&nbsp;depAnal.ProcessCmdLine(patterns,dfpath); 
+ &nbsp;&nbsp;&nbsp;&nbsp;depAnal.getSourceFiles(); 
+ &nbsp;&nbsp;&nbsp;&nbsp;depAnal.processSourceCode();    // dependancy analysis 
+ &nbsp;&nbsp;&nbsp;&nbsp;for(auto dir: FileSystem::Directory::getDirectories(dfpath)) 
+<div id = "div27"> &nbsp;&nbsp;&nbsp;&nbsp;{  
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::string Intpath = FileSystem::Path::getFullFileSpec(dfpath + "//" + dir); 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;for (auto file : FileSystem::Directory::getFiles(Intpath, "*.h")) 
+<div id = "div28"> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{ 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ConvertToHtml cth; 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;file = FileSystem::Path::getFullFileSpec(Intpath + "//" + file); 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cth.SetFileName(file); 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cth.SetDestDirName(Intpath); 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cth.InsertPrologue(); 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cth.FileInitialization(); 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cth.EnterCode(file); 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cth.FileClose(); 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;} 
+</div><br> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;for (auto file : FileSystem::Directory::getFiles(Intpath, "*.cpp")) 
+<div id = "div29"> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{ 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ConvertToHtml cth1; 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;file = FileSystem::Path::getFullFileSpec(Intpath + "//" + file); 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cth1.SetFileName(file); 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cth1.SetDestDirName(Intpath); 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cth1.InsertPrologue(); 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cth1.FileInitialization(); 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cth1.EnterCode(file); 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cth1.FileClose(); 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;} 
+</div><br> &nbsp;&nbsp;&nbsp;&nbsp;} 
+</div><br> } 
+</div><br>  
+ // -- defiens the processing of the send thread -- // 
+  
+ bool RepositoryServer::sendProc() 
+ {<button onClick = "OnClickDiv('div30', 'button30')" id = "button30">-</button><div id = "div30"> 
+ &nbsp;&nbsp;&nbsp;&nbsp;while (!closeSender_) 
+<div id = "div31"> &nbsp;&nbsp;&nbsp;&nbsp;{ 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;HTTPMessage hMsg; 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::string msg = sendQ_.deQ(); 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;hMsg.parseMessage(msg); 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if (hMsg.command() == "close") 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;continue; 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::string toAddr = hMsg.toAddress(); 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if (connections_.find(toAddr) == connections_.end()) 
+<div id = "div32"> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{ 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::string ip = toAddr.substr(toAddr.find("[") + 1, toAddr.find("]") - toAddr.find("[") - 1); 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;size_t port = std::stoi(toAddr.substr(toAddr.find("]") + 2)); 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SocketConnecter sc; 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;connections_.insert({ toAddr, std::move(sc) }); 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;connect(ip, port, connections_.find(toAddr)-&gt;second); 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;} 
+</div><br> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if (hMsg.command() == "publish") 
+<div id = "div33"> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{ 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;generateHTML(hMsg); 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::string filePath; 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::string dirPath; 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::vector&lt;std::string&gt; dirs = FileSystem::Directory::getDirectories("..//Repository"); 
+<div id = "div34"> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;for (auto dir : dirs){ 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if (dir != "." && dir != "..") 
+<div id = "div35"> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{ 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::vector&lt;std::string&gt; file_list = FileSystem::Directory::getFiles("..//Repository//" + dir); 
+<div id = "div36"> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;for (auto f : file_list) { 
+<div id = "div37"> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if (f == hMsg.name()){ 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;filePath = "..//Repository//" + dir + "/" + f; 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;dirPath = "..//Repository//" + dir; 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;} 
+</div><br> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;} 
+</div><br> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;} 
+</div><br> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;} 
+</div><br> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;hMsg.content() = std::to_string(1); 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;connections_.find(toAddr)-&gt;second.sendString(hMsg.buildMessage()); 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;sendFile(filePath, connections_.find(toAddr)-&gt;second, hMsg.fromAddress(), hMsg.toAddress()); 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;} 
+</div><br> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;else 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;connections_.find(toAddr)-&gt;second.sendString(hMsg.buildMessage()); 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::cout << "\n  server sent msg : " << hMsg.command() << "  to client : " << hMsg.toAddress() << "\n"; 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if (hMsg.command() == "quit") 
+<div id = "div38"> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{ 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::cout << "\n\n  server deleting socket connector to client : " << hMsg.toAddress() << "\n"; 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;connections_.erase(toAddr); 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;} 
+</div><br> &nbsp;&nbsp;&nbsp;&nbsp;} 
+</div><br> &nbsp;&nbsp;&nbsp;&nbsp;return true; 
+ } 
+</div><br>  
+  
+ // -- close the send thread and shut down the server processing -- // 
+  
+ bool RepositoryServer::closeServer() 
+ {<button onClick = "OnClickDiv('div39', 'button39')" id = "button39">-</button><div id = "div39"> 
+ &nbsp;&nbsp;&nbsp;&nbsp;closeSender_ = true; 
+ &nbsp;&nbsp;&nbsp;&nbsp;if (sendQ_.size() == 0) 
+<div id = "div40"> &nbsp;&nbsp;&nbsp;&nbsp;{ 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;HTTPMessage closeMsg; 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;closeMsg.command() = "close"; 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;closeMsg.contentLength() = "0"; 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;sendQ_.enQ(closeMsg.buildMessage()); 
+ &nbsp;&nbsp;&nbsp;&nbsp;} 
+</div><br> &nbsp;&nbsp;&nbsp;&nbsp;senderDone_.get(); 
+ &nbsp;&nbsp;&nbsp;&nbsp;std::cout << "\n\n  Sender closed\n"; 
+ &nbsp;&nbsp;&nbsp;&nbsp;closeServer_ = true; 
+ &nbsp;&nbsp;&nbsp;&nbsp;if (recvQ_.size() == 0) 
+<div id = "div41"> &nbsp;&nbsp;&nbsp;&nbsp;{ 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;HTTPMessage closeMsg; 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;closeMsg.command() = "close"; 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;closeMsg.contentLength() = "0"; 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;recvQ_.enQ(closeMsg.buildMessage()); 
+ &nbsp;&nbsp;&nbsp;&nbsp;} 
+</div><br> &nbsp;&nbsp;&nbsp;&nbsp;std::cout << "\n\n  Server closed\n\n"; 
+ &nbsp;&nbsp;&nbsp;&nbsp;return serverDone_.get(); 
+ } 
+</div><br>  
+ // -- helper function to handle publish request and suppors functionality of lazy loading -- // 
+  
+ void RepositoryServer::doPublishWithDep(std::vector&lt;std::string&gt; visited_, std::string fileName, std::string toAddr) 
+ {<button onClick = "OnClickDiv('div42', 'button42')" id = "button42">-</button><div id = "div42"> 
+ &nbsp;&nbsp;&nbsp;&nbsp;bool visit = false; std::string originalFile = fileName; 
+ &nbsp;&nbsp;&nbsp;&nbsp;std::string pkgName; HTTPMessage httpMsg; std::list&lt;std::string&gt; queue; 
+ &nbsp;&nbsp;&nbsp;&nbsp;visited_.push_back(fileName); queue.push_back(fileName); std::list&lt;std::string&gt;::iterator i; 
+<div id = "div43"> &nbsp;&nbsp;&nbsp;&nbsp;while (!queue.empty()) { 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;fileName = queue.front(); 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;httpMsg.command() = "publish"; 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;httpMsg.fromAddress() = "[localhost]:" + std::to_string(port_); 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;httpMsg.toAddress() = toAddr; 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;httpMsg.name() = fileName + ".htm"; 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;httpMsg.contentLength() = "0"; 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;postMessage(httpMsg.buildMessage()); 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;queue.pop_front(); 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::vector&lt;std::string&gt; dirs = FileSystem::Directory::getDirectories("..//Repository"); 
+<div id = "div44"> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;for (auto dir : dirs) { 
+<div id = "div45"> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if (dir != "." && dir != "..") { 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::vector&lt;std::string&gt; file_list = FileSystem::Directory::getFiles("..//Repository//" + dir); 
+<div id = "div46"> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;for (auto f : file_list) { 
+<div id = "div47"> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if (f == fileName) { 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;pkgName = dir; break; 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;} 
+</div><br> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;} 
+</div><br> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;} 
+</div><br> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;} 
+</div><br> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::vector&lt;std::string&gt; deps = getDependencies(pkgName, fileName); 
+<div id = "div48"> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;for (auto dep : deps) { 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;visit = false; 
+<div id = "div49"> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;for (auto iter = visited_.begin(); iter != visited_.end(); iter++){ 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if ((*iter) == dep.substr(0, dep.find_last_of("."))) 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;visit = true; 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;} 
+</div><br><div id = "div50"> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if (visit == false) { 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;visited_.push_back(dep.substr(0,dep.find_last_of("."))); 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;queue.push_back(dep.substr(0, dep.find_last_of("."))); 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;} 
+</div><br> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;} 
+</div><br> &nbsp;&nbsp;&nbsp;&nbsp;} 
+</div><br> &nbsp;&nbsp;&nbsp;&nbsp;httpMsg.command() = "publish"; 
+ &nbsp;&nbsp;&nbsp;&nbsp;httpMsg.fromAddress() = "[localhost]:" + std::to_string(port_); httpMsg.toAddress() = toAddr; 
+ &nbsp;&nbsp;&nbsp;&nbsp;httpMsg.contentLength() = "0"; 
+ &nbsp;&nbsp;&nbsp;&nbsp;httpMsg.name() = "CSSFile.css"; // sending CSS file 
+ &nbsp;&nbsp;&nbsp;&nbsp;postMessage(httpMsg.buildMessage()); 
+ &nbsp;&nbsp;&nbsp;&nbsp;httpMsg.name() = "JSFile.js";  //sending javascript file 
+ &nbsp;&nbsp;&nbsp;&nbsp;postMessage(httpMsg.buildMessage()); 
+ &nbsp;&nbsp;&nbsp;&nbsp;httpMsg.command() = "open_home"; 
+ &nbsp;&nbsp;&nbsp;&nbsp;httpMsg.name() = originalFile;  //done with file transfer so open the requested page in browser 
+ &nbsp;&nbsp;&nbsp;&nbsp;postMessage(httpMsg.buildMessage()); 
+ &nbsp;&nbsp;&nbsp;&nbsp;httpMsg.command() = "published";  //done with publishing the file 
+ &nbsp;&nbsp;&nbsp;&nbsp;postMessage(httpMsg.buildMessage()); 
+ } 
+</div><br> // -- start processing client requests -- // 
+  
+ void RepositoryServer::startServerProcessing() 
+ {<button onClick = "OnClickDiv('div51', 'button51')" id = "button51">-</button><div id = "div51"> 
+ &nbsp;&nbsp;&nbsp;&nbsp;serverDone_ = std::async(std::launch::async, [&]()-&gt; bool {return serverProc(); }); 
+ } 
+</div><br>  
+ // -- defines processing to handle client requests -- // 
+  
+ bool RepositoryServer::serverProc() 
+ {<button onClick = "OnClickDiv('div52', 'button52')" id = "button52">-</button><div id = "div52"> 
+ &nbsp;&nbsp;&nbsp;&nbsp;int count_files = 0; 
+<div id = "div53"> &nbsp;&nbsp;&nbsp;&nbsp;while (!closeServer_) { 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;HTTPMessage httpMsg; httpMsg = getMessage(); 
+<div id = "div54"> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if (httpMsg.command() == "upload") { 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::cout << ("\n  server processing upload of File : " + httpMsg.getBody()[count_files].substr(httpMsg.getBody()[count_files].find_last_of('\\') + 1) + "  for client : " + httpMsg.fromAddress() + "\n"); 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;count_files++; if (count_files &gt;= httpMsg.getContentLength()) { count_files = 0; } 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;} 
+</div><br><div id = "div55"> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;else if (httpMsg.command() == "get_package_list") { 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::cout << ("\n  server processing get_package_list request for client : " + httpMsg.fromAddress() + "\n"); 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::vector&lt;std::string&gt; dirs = FileSystem::Directory::getDirectories("..//Repository"); 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::vector&lt;std::string&gt; packages; 
+<div id = "div56"> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;for (auto dir : dirs) { 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if (dir != "." && dir != "..") 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;packages.push_back(dir); } 
+</div><br> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;httpMsg.command() = "package_list"; httpMsg.content() = "packages"; httpMsg.setBody(packages);} 
+</div><br><div id = "div57"> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;else if (httpMsg.command() == "get_file_list") { 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::cout << ("\n  server processing get_file_list request for client : " + httpMsg.fromAddress() + "\n"); 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::vector&lt;std::string&gt; dirs = FileSystem::Directory::getDirectories("..//Repository");std::vector&lt;std::string&gt; packages; 
+<div id = "div58"> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;for (auto dir : dirs) { 
+<div id = "div59"> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if (dir != "." && dir != "..") { 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;packages.push_back("&lt;&gt; " + dir); 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::vector&lt;std::string&gt; file_list = FileSystem::Directory::getFiles("..//Repository//" + dir); 
+<div id = "div60"> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;for (auto f : file_list) { 
+<div id = "div61"> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if (f.find(".css") == std::string::npos && f.find(".js") == std::string::npos) { 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;packages.push_back(f); 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}}}}httpMsg.command() = "file_list"; httpMsg.content() = "files"; httpMsg.setBody(packages);} 
+</div><br><div id = "div62"> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;else if (httpMsg.command() == "delete_file") { 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::cout << ("\n  server processing delete_file request for client : " + httpMsg.fromAddress() + "\n"); 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::vector&lt;std::string&gt; dirs = FileSystem::Directory::getDirectories("..//Repository"); 
+<div id = "div63"> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;for (auto dir : dirs) { 
+<div id = "div64"> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if (dir != "." && dir != "..") { 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::vector&lt;std::string&gt; file_list = FileSystem::Directory::getFiles("..//Repository//" + dir); 
+<div id = "div65"> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;for (auto f : file_list) { 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if (f == httpMsg.name()) 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FileSystem::File::remove(FileSystem::Path::getFullFileSpec("..//Repository//" + dir + "//" + f)); 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}}}httpMsg.command() = "file_deleted"; httpMsg.content() = "delete";} 
+</div><br><div id = "div66"> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;else if (httpMsg.command() == "open_web_page") { 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::cout << ("\n  server processing get_package_list request for client : " + httpMsg.fromAddress() + "\n"); 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::vector&lt;std::string&gt; visited{}; doPublishWithDep(visited, httpMsg.name().substr(0,httpMsg.name().find_last_of(".")), httpMsg.fromAddress()); 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;continue;} 
+</div><br><div id = "div67"> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;else if (httpMsg.command() == "publish") { 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;generateHTML(httpMsg); 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::cout << ("\n  server processing file publish : " + httpMsg.name() + "  for client : " + httpMsg.fromAddress() + "\n"); 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::vector&lt;std::string&gt; visited{}; doPublishWithDep(visited,httpMsg.name(), httpMsg.fromAddress()); 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;continue; 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;} 
+</div><br> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;httpMsg.swapAddresses(); postMessage(httpMsg.buildMessage()); 
+ &nbsp;&nbsp;&nbsp;&nbsp;}return true; 
+</div><br> } 
+</div><br>  
+  
+ int main(int argc, char* argv[]) 
+<div id = "div68"> { 
+ &nbsp;&nbsp;&nbsp;&nbsp;::SetConsoleTitle(L"Repository Server"); 
+ &nbsp;&nbsp;&nbsp;&nbsp;std::cout<<"\n  Remote Repository Server started on port : "; 
+ &nbsp;&nbsp;&nbsp;&nbsp;try 
+<div id = "div69"> &nbsp;&nbsp;&nbsp;&nbsp;{ 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::cout << std::stoi(argv[1]); 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;RepositoryServer server("localhost", std::stoi(argv[1])); 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;server.startSender(); 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;server.startListener(); 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;server.startServerProcessing(); 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Show::write("\n --------------------\n  press enter key to exit: \n --------------------"); 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::cout.flush(); 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::cin.get(); 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;server.closeServer(); 
+ &nbsp;&nbsp;&nbsp;&nbsp;} 
+</div><br> &nbsp;&nbsp;&nbsp;&nbsp;catch (std::exception& exc) 
+<div id = "div70"> &nbsp;&nbsp;&nbsp;&nbsp;{ 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Show::write("\n  Exeception caught: "); 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::string exMsg = "\n  " + std::string(exc.what()) + "\n\n"; 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Show::write(exMsg); 
+ &nbsp;&nbsp;&nbsp;&nbsp;} 
+</div><br> } 
+</div><br>
+</pre>
+</body>
+</html>

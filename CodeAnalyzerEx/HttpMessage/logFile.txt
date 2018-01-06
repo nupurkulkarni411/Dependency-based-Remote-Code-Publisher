@@ -1,0 +1,42 @@
+
+                                             CodeAnalysis
+    ==============================================================================================
+     Wed May  3 19:19:04 2017
+     Path: "C:\Users\lenovo\Desktop\ood check\project4\CodeAnalyzerEx\HttpMessage"
+     Args: HttpMessage.cpp, /m, /r, /f
+                                                                               
+           Code Metrics - Start Line, Size (lines/code), and Complexity (number of scopes)
+    ==============================================================================================
+
+                 file name        type                               name    line    size    cplx
+    -----------------------  ----------  ---------------------------------  ------  ------  ------
+                             namespace                   Global Namespace       1       1      21
+
+                 file name        type                               name    line    size    cplx
+    -----------------------  ----------  ---------------------------------  ------  ------  ------
+           HttpMessage.cpp    function                        HTTPMessage      22      12       1
+           HttpMessage.cpp    function                         operator=(      38      15       1
+           HttpMessage.cpp    function                            command      57       3       1
+           HttpMessage.cpp    function                        fromAddress      64       3       1
+           HttpMessage.cpp    function                          toAddress      71       3       1
+           HttpMessage.cpp    function                               name      78       3       1
+           HttpMessage.cpp    function                            content      85       3       1
+           HttpMessage.cpp    function                      contentLength      92       3       1
+           HttpMessage.cpp    function                      swapAddresses      99       5       1
+           HttpMessage.cpp    function                   setContentLength     108       3       1
+           HttpMessage.cpp    function                   getContentLength     115       3       1
+           HttpMessage.cpp    function                       buildMessage     122       6       1
+           HttpMessage.cpp    function                            setBody     132       6       1
+           HttpMessage.cpp    function                            getBody     142       3       1
+           HttpMessage.cpp    function                       parseMessage     149      27       4
+           HttpMessage.cpp    function                               main     182      24       2
+
+                          Functions Exceeding Metric Limits and Public Data
+    ==============================================================================================
+                 file name        type                               name    line    size    cplx
+    -----------------------  ----------  ---------------------------------  ------  ------  ------
+
+
+
+    searched     6 dirs
+   processed     1 files

@@ -1,0 +1,126 @@
+<!----------------------------------------------------------------------------
+ConvertToHtml.h.htm - Generated HTML file of Project #3
+Published 04 April 2017
+Nupur Kulkarni, CSE687 - Object Oriented Design, Spring 2017
+
+Note:
+- Markup characters in the text part, enclosed in <pre>...</pre> have been 
+  replaced with escape sequences, e.g., < becomes &lt; and > becomes &gt;
+----------------------------------------------------------------------------->
+<html>
+<head>
+<link rel = stylesheet href = CSSFile.css>
+<script src= JSFile.js></script>
+</head>
+<body>
+<h3>ConvertToHtml.h</h3>
+<hr />
+<div class=indent><h4>Dependencies:</h4><p><a href = Graph.h.htm> Graph.h</a></p><p><a href = Logger.cpp.htm> Logger.cpp</a></p><p><a href = ConvertToHtml.cpp.htm> ConvertToHtml.cpp</a></p><p><a href = HttpMessage.cpp.htm> HttpMessage.cpp</a></p></div>
+<hr />
+<pre>
+ #pragma once 
+ #ifndef CONVERTTOHTML_H 
+ #define CONVERTTOHTML_H 
+ /////////////////////////////////////////////////////////////////////////////// 
+ // ConvertToHtml.h -   this class converts C++ source file to HTML file      // 
+ //                     using CSS for styling and JavaScript for expanding    // 
+ //                     and collapsing classes,functions and global functions // 
+ // ver 3.3                                                                   // 
+ // Language:    C++, Visual Studio 2015                                      // 
+ // Application: Dependency-Based CodePublisher,                              // 
+ // CSE687 -     Object Oriented Design                                       // 
+ // Author:      Nupur Kulkarni, Syracuse University,                         // 
+ //              nvkulkar@syr.edu                                             // 
+ /////////////////////////////////////////////////////////////////////////////// 
+ /* 
+ * Package Operations: 
+ * ------------------- 
+ * This package provides a ConvertToHtml class. 
+ * ConvertToHtml takes source C++ files as input and publishes those files into HTML format 
+ *  
+ * 
+  
+ Public Interface: 
+ ================= 
+ void SetFileName(std::string FileName) //sets the file name of the file which is currently being processed  
+ void FileInitialization(); //Generates HTML head part containing all references to CSS and JavaScript files  
+                              and dependancies which are included in html file. 
+ void EnterCode(std::string FileName); //process source code and generates corresponding HTML code 
+ void FileClose(); //Ends HTML file. 
+ std::string ReplaceAll(std::string str, const std::string& from, const std::string& to); // Any markup 
+                        character which is to be escaped will be replaced by appropriate exit code. 
+ void CreateJS(); // creates JavaScript file 
+ void CreateCSS(); // creates CSS file. 
+ bool FileExists(const std::string& name); // this function checks if css and javascript files  
+                                              are already created and prevents creation of files every time. 
+ bool CheckForClassFunGlfn(std::string line, std::string line1); //this function checks if current token  
+                                         is class function or global function used for expand and collapse. 
+ void CreateHomePage(std::vector&lt;std::string&gt; files); //creates home page listing all files and dependancies 
+ void SetDestDirName(std::string destDirName); //sets destination folder path in which HTM files are stored 
+ void OpenCommandLineFile(int argc, char* argv[]); //opens htm file stated in command line 
+ void InsertPrologue(); //inserts prologue in each HTM file 
+ bool ChkBrOnlyLine(std::string line); // function used to check if line contains only opening bracket 
+ std::string ReplaceTab(std::string str, const std::string& from, const std::string& to); //replaces tab with 
+                                                                                            exit code. 
+  
+  
+ * Build Process: 
+ * -------------- 
+ * Required Files: Graph.h, ActionsAndRules.h, TypeTable.h 
+ * 
+ * Maintenance History: 
+ * -------------------- 
+ * ver 1.0 : 04 April 2017 
+ * - first release of new design 
+ */ 
+  
+  
+ #include &lt;string&gt; 
+ #include "../Graph/Graph.h" 
+ #include "../Parser/ActionsAndRules.h" 
+ #include "../TypeTable/TypeTable.h" 
+  
+ using namespace std; 
+  
+ namespace CodeAnalysis {<button onClick = "OnClickDiv('div1', 'button1')" id = "button1">-</button><div id = "div1"> 
+  
+ &nbsp;&nbsp;&nbsp;&nbsp;class ConvertToHtml {<button onClick = "OnClickDiv('div2', 'button2')" id = "button2">-</button><div id = "div2"> 
+ &nbsp;&nbsp;&nbsp;&nbsp;private: 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::string SourceFileName; 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::string DestDirName; 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::string FileString; 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Graph&lt;std::string, std::string&gt; &depgraph; 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;size_t totalVertices; 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TypeTable &typeTable; 
+  
+ &nbsp;&nbsp;&nbsp;&nbsp;public: 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ConvertToHtml::ConvertToHtml() :depgraph(Repository::getInstance()-&gt;dependencyGraph()), 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;typeTable(Repository::getInstance()-&gt;typeTable()) 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{<button onClick = "OnClickDiv('div3', 'button3')" id = "button3">-</button><div id = "div3"> 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;totalVertices = depgraph.size(); 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;} 
+</div><br> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;void SetFileName(std::string FileName); 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;void FileInitialization(); 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;void EnterCode(std::string FileName); 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;void FileClose(); 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::string ReplaceAll(std::string str, const std::string& from, const std::string& to); 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;void CreateJS(); 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;void CreateCSS(); 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;bool FileExists(const std::string& name); 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;bool CheckForClassFunGlfn(std::string line, std::string line1); 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;void CreateHomePage(std::vector&lt;std::string&gt; files); 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;void SetDestDirName(std::string destDirName); 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;void OpenCommandLineFile(int argc, char* argv[]); 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;void InsertPrologue(); 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;bool ChkBrOnlyLine(std::string line); 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::string ReplaceTab(std::string str, const std::string& from, const std::string& to); 
+ &nbsp;&nbsp;&nbsp;&nbsp;}; 
+</div><br>  
+ } 
+</div><br> #endif 
+  
+  
+
+</pre>
+</body>
+</html>

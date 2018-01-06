@@ -1,0 +1,40 @@
+
+                                             CodeAnalysis
+    ==============================================================================================
+     Mon Mar 13 14:19:58 2017
+     Path: "C:\Users\lenovo\Documents\Visual Studio 2015\Projects\CodeAnalyzerEx\AbstractSyntaxTree"
+     Args: AbstrSynTree.cpp, /m, /r, /f
+                                                                               
+           Code Metrics - Start Line, Size (lines/code), and Complexity (number of scopes)
+    ==============================================================================================
+
+                 file name        type                               name    line    size    cplx
+    -----------------------  ----------  ---------------------------------  ------  ------  ------
+                             namespace                   Global Namespace       1       1      19
+
+                 file name        type                               name    line    size    cplx
+    -----------------------  ----------  ---------------------------------  ------  ------  ------
+          AbstrSynTree.cpp    function                            ASTNode      32       2       1
+          AbstrSynTree.cpp    function                            ASTNode      37       2       1
+          AbstrSynTree.cpp    function                           ~ASTNode      43      10       2
+          AbstrSynTree.cpp    function                               show      56      21       2
+          AbstrSynTree.cpp    function                       AbstrSynTree      83       6       1
+          AbstrSynTree.cpp    function                      ~AbstrSynTree      96       3       1
+          AbstrSynTree.cpp    function                               root     102       3       1
+          AbstrSynTree.cpp    function                            typeMap     110       3       1
+          AbstrSynTree.cpp    function                                add     119       7       1
+          AbstrSynTree.cpp    function                                pop     132       3       1
+          AbstrSynTree.cpp    function                               find     140       8       2
+          AbstrSynTree.cpp    function                    findRecursively     149       9       2
+          AbstrSynTree.cpp    function                               main     172      36       2
+          AbstrSynTree.cpp      lambda  [](ASTNode*pNode,size_tindentLeve     191       2       1
+
+                          Functions Exceeding Metric Limits and Public Data
+    ==============================================================================================
+                 file name        type                               name    line    size    cplx
+    -----------------------  ----------  ---------------------------------  ------  ------  ------
+
+
+
+    searched     4 dirs
+   processed     1 files

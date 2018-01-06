@@ -1,0 +1,54 @@
+
+                                             CodeAnalysis
+    ==============================================================================================
+     Wed May  3 23:24:47 2017
+     Path: "C:\Users\lenovo\Desktop\ood check\project4\CodeAnalyzerEx\MockChannel"
+     Args: MockChannel.cpp, /m, /r, /f
+                                                                               
+           Code Metrics - Start Line, Size (lines/code), and Complexity (number of scopes)
+    ==============================================================================================
+
+                 file name        type                               name    line    size    cplx
+    -----------------------  ----------  ---------------------------------  ------  ------  ------
+                             namespace                   Global Namespace       1       1      48
+
+                 file name        type                               name    line    size    cplx
+    -----------------------  ----------  ---------------------------------  ------  ------  ------
+           MockChannel.cpp       class                      ServerHandler      39       9      13
+           MockChannel.cpp    function                      ServerHandler      40       2       1
+           MockChannel.cpp    function                         operator()      53      37       6
+           MockChannel.cpp    function                           recvFile      94      46       4
+           MockChannel.cpp    function               openRequestedWebPage     144       7       1
+           MockChannel.cpp       class                              Sendr     157       7       3
+           MockChannel.cpp    function                        postMessage     166       3       1
+           MockChannel.cpp    function                              queue     169       2       1
+           MockChannel.cpp       class                              Recvr     177       7       3
+           MockChannel.cpp    function                         getMessage     186       3       1
+           MockChannel.cpp    function                              queue     189       2       1
+           MockChannel.cpp       class                        MockChannel     197      28      26
+           MockChannel.cpp    function                        MockChannel     227       2       1
+           MockChannel.cpp    function                        postMessage     233       3       1
+           MockChannel.cpp    function                         getMessage     240       3       1
+           MockChannel.cpp    function                              start     247       4       1
+           MockChannel.cpp    function                               stop     254       4       1
+           MockChannel.cpp    function                            connect     262      17       3
+           MockChannel.cpp    function                    manualExecution     284      45       2
+           MockChannel.cpp    function                        startSender     333       4       2
+           MockChannel.cpp    function                              async     333       1       1
+           MockChannel.cpp    function                      startReceiver     341      12       3
+           MockChannel.cpp    function                      waitForSender     357       3       1
+           MockChannel.cpp    function                               done     364      11       2
+           MockChannel.cpp    function                           sendProc     379      28       5
+           MockChannel.cpp    function                           sendFile     411      35       2
+           MockChannel.cpp    function                  createMockChannel     450       3       1
+           MockChannel.cpp    function                               main     459      19       1
+
+                          Functions Exceeding Metric Limits and Public Data
+    ==============================================================================================
+                 file name        type                               name    line    size    cplx
+    -----------------------  ----------  ---------------------------------  ------  ------  ------
+
+
+
+    searched     3 dirs
+   processed     1 files

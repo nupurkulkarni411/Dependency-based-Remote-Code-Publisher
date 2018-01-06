@@ -1,0 +1,90 @@
+
+  <project>
+    <key>
+      1
+    </key>
+    <name>
+      1
+    </name>
+    <category>
+      SSC
+    </category>
+    <description>
+      SSC No.: 1 children show members of SSC.
+    </description>
+    <timedate>
+      2017-3-13 21:44:41
+    </timedate>
+    <children>
+      AbstrSynTree.cpp
+      AbstrSynTree.h
+    </children>
+    <data>
+      1
+    </data>
+    <key>
+      2
+    </key>
+    <name>
+      2
+    </name>
+    <category>
+      SSC
+    </category>
+    <description>
+      SSC No.: 2 children show members of SSC.
+    </description>
+    <timedate>
+      2017-3-13 21:44:41
+    </timedate>
+    <children>
+      StrongComponents.h
+      StrongComponents.cpp
+    </children>
+    <data>
+      2
+    </data>
+    <key>
+      3
+    </key>
+    <name>
+      3
+    </name>
+    <category>
+      SSC
+    </category>
+    <description>
+      SSC No.: 3 children show members of SSC.
+    </description>
+    <timedate>
+      2017-3-13 21:44:41
+    </timedate>
+    <children>
+      DepAnal.cpp
+      DepAnal.h
+    </children>
+    <data>
+      3
+    </data>
+    <key>
+      4
+    </key>
+    <name>
+      4
+    </name>
+    <category>
+      SSC
+    </category>
+    <description>
+      SSC No.: 4 children show members of SSC.
+    </description>
+    <timedate>
+      2017-3-13 21:44:41
+    </timedate>
+    <children>
+      Typedefchk.cpp
+    </children>
+    <data>
+      4
+    </data>
+  </project>

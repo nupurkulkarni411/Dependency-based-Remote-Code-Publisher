@@ -1,0 +1,409 @@
+<!----------------------------------------------------------------------------
+ConvertToHtml.cpp.htm - Generated HTML file of Project #3
+Published 04 April 2017
+Nupur Kulkarni, CSE687 - Object Oriented Design, Spring 2017
+
+Note:
+- Markup characters in the text part, enclosed in <pre>...</pre> have been 
+  replaced with escape sequences, e.g., < becomes &lt; and > becomes &gt;
+----------------------------------------------------------------------------->
+<html>
+<head>
+<link rel = stylesheet href = CSSFile.css>
+<script src= JSFile.js></script>
+</head>
+<body>
+<h3>ConvertToHtml.cpp</h3>
+<hr />
+<div class=indent><h4>Dependencies:</h4><p><a href = Logger.cpp.htm> Logger.cpp</a></p><p><a href = ConvertToHtml.h.htm> ConvertToHtml.h</a></p><p><a href = Graph.h.htm> Graph.h</a></p><p><a href = SemiExp.cpp.htm> SemiExp.cpp</a></p><p><a href = HttpMessage.cpp.htm> HttpMessage.cpp</a></p><p><a href = Graph.cpp.htm> Graph.cpp</a></p><p><a href = MockChannel.cpp.htm> MockChannel.cpp</a></p><p><a href = MsgServer.cpp.htm> MsgServer.cpp</a></p><p><a href = TypeAnal.cpp.htm> TypeAnal.cpp</a></p><p><a href = Window.cpp.htm> Window.cpp</a></p></div>
+<hr />
+<pre>
+ /////////////////////////////////////////////////////////////////////// 
+ // ConvertToHtml.cpp - this is responsible for generating HTML code  // 
+ //                     for C++ source code                           // 
+ // ver 3.3                                                           // 
+ // Language:    C++, Visual Studio 2015                              // 
+ // Application: Dependency-Based CodePublisher,                      // 
+ //              CSE687 - Object Oriented Design                      // 
+ // Author:      Nupur Kulkarni, Syracuse University,                 // 
+ //              nvkulkar@syr.edu                                     // 
+ /////////////////////////////////////////////////////////////////////// 
+ /* 
+  
+ * Build Process: 
+ * -------------- 
+ * Required Files: ConvertToHtml.h 
+ * 
+ * Maintenance History: 
+ * -------------------- 
+ * ver 1.0 : 04 April 2017 
+ * - first release of new design 
+ */ 
+  
+  
+  
+ #include "ConvertToHtml.h" 
+ #include &lt;sstream&gt; 
+ #include &lt;vector&gt; 
+ #include &lt;iomanip&gt; 
+ #include &lt;iostream&gt; 
+ #include &lt;fstream&gt; 
+  
+  
+ using namespace std; 
+ using namespace CodeAnalysis; 
+  
+ //sets the file name of the file which is currently being processed  
+ void ConvertToHtml::SetFileName(std::string FileName) 
+ {<button onClick = "OnClickDiv('div1', 'button1')" id = "button1">-</button><div id = "div1"> 
+ &nbsp;&nbsp;&nbsp;&nbsp;SourceFileName = FileName; 
+ } 
+</div><br>  
+ //Generates HTML head part containing all references to CSS and JavaScript files  
+ //and dependancies which are included in html file. 
+ void ConvertToHtml::FileInitialization() 
+ {<button onClick = "OnClickDiv('div2', 'button2')" id = "button2">-</button><div id = "div2"> 
+ &nbsp;&nbsp;&nbsp;&nbsp;std::string fileName = SourceFileName.substr(SourceFileName.find_last_of('\\') + 1); 
+ &nbsp;&nbsp;&nbsp;&nbsp;if (!FileExists(DestDirName + "\\" + "CSSFile.css")) //create css file if one does not exist  
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CreateCSS(); 
+ &nbsp;&nbsp;&nbsp;&nbsp;if(!FileExists( DestDirName + "\\" + "JSFile.js")) //create javascript file if one does not exist 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CreateJS(); 
+ &nbsp;&nbsp;&nbsp;&nbsp;FileString = FileString + "&lt;html&gt;\n"; 
+ &nbsp;&nbsp;&nbsp;&nbsp;FileString = FileString + "&lt;head&gt;\n"; 
+ &nbsp;&nbsp;&nbsp;&nbsp;FileString = FileString + "&lt;link rel = " + "stylesheet " + "href = " + "CSSFile.css" + "&gt;"; 
+ &nbsp;&nbsp;&nbsp;&nbsp;FileString = FileString + "&lt;script src= " + "JSFile.js" + "&gt;" + "&lt;/script&gt;"; 
+ &nbsp;&nbsp;&nbsp;&nbsp;FileString = FileString + "\n&lt;/head&gt;\n" + "&lt;body&gt;\n"; 
+ &nbsp;&nbsp;&nbsp;&nbsp;FileString = FileString + "&lt;h3&gt;" + fileName + "&lt;/h3&gt;" + "\n&lt;hr /&gt;\n"; 
+ &nbsp;&nbsp;&nbsp;&nbsp;FileString = FileString + "&lt;div class=" + "indent" + "&gt;"; 
+ &nbsp;&nbsp;&nbsp;&nbsp;FileString = FileString + "&lt;h4&gt;Dependencies:&lt;/h4&gt;"; 
+ &nbsp;&nbsp;&nbsp;&nbsp;for (auto it = depgraph.begin(); it != depgraph.end(); ++it) //inserting links to dependant files 
+<div id = "div3"> &nbsp;&nbsp;&nbsp;&nbsp;{ 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Vertex&lt;std::string, std::string&gt; v = *it; 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if (fileName == (v.value()).c_str()) 
+<div id = "div4"> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{ 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;for (size_t i = 0; i &lt; v.size(); ++i) 
+<div id = "div5"> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{ 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Vertex&lt;std::string, std::string&gt;::Edge edge = v[i]; 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FileString = FileString + "&lt;p&gt;"+ "&lt;a href = " + depgraph[edge.first].value().c_str() + ".htm" + "&gt; " + depgraph[edge.first].value().c_str() + "&lt;/a&gt;" + "&lt;/p&gt;"; 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;} 
+</div><br> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;} 
+</div><br> &nbsp;&nbsp;&nbsp;&nbsp;} 
+</div><br> &nbsp;&nbsp;&nbsp;&nbsp;FileString = FileString + "&lt;/div&gt;\n" + "&lt;hr /&gt;\n"; 
+ &nbsp;&nbsp;&nbsp;&nbsp;FileString = FileString + "&lt;pre&gt;\n"; 
+ } 
+</div><br>  
+ //process source code and generates corresponding HTML code 
+ void ConvertToHtml::EnterCode(std::string file) 
+ {<button onClick = "OnClickDiv('div6', 'button6')" id = "button6">-</button><div id = "div6"> 
+ &nbsp;&nbsp;&nbsp;&nbsp;int counter = 1; 
+ &nbsp;&nbsp;&nbsp;&nbsp;std::ifstream in(file); 
+ &nbsp;&nbsp;&nbsp;&nbsp;std::string line; 
+<div id = "div7"> &nbsp;&nbsp;&nbsp;&nbsp;do { 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::getline(in, line); 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::string tok = " " + line + " \n"; 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;tok = ReplaceAll(tok, "&lt;", "&lt;"); 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;tok = ReplaceAll(tok, "&gt;", "&gt;"); 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;tok = ReplaceTab(tok, "\t", "&nbsp;&nbsp;&nbsp;&nbsp;"); 
+<div id = "div8"> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if (tok.find("{") &gt;= 0 && tok.find("{") &lt; tok.length() &&  
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;   (tok.find("}") &gt;= 0 && tok.find("}") &lt; tok.length())) { 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FileString += tok; // case if opening and closing bracket iss on same line 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;} 
+</div><br><div id = "div9"> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;else { 
+<div id = "div10"> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if (tok.find("{") &gt;= 0 && tok.find("{") &lt; tok.length() &&  
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;!(tok.find("}") &gt;= 0 && tok.find("}") &lt; tok.length())) { 
+<div id = "div11"> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if(CheckForClassFunGlfn(tok, FileString)) { //brackets are not on same line then check  
+<div id = "div12"> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;size_t position = tok.find_last_of("{"); // if line contains only bracket 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::string smallTok = tok.substr(0, position+1); 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FileString += smallTok; 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FileString += "&lt;button onClick = \"OnClickDiv('div" + std::to_string(counter); 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FileString += "\', 'button" + std::to_string(counter); 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FileString += "\')"; FileString += "\""; 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FileString += " id = \"button" + std::to_string(counter); 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FileString += "\"&gt;"; FileString += "-&lt;/button&gt;"; 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FileString += "&lt;div id = \"div" + std::to_string(counter); FileString += "\"&gt;"; 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FileString += tok.substr(position+1); 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;counter++; 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;} 
+</div><br><div id = "div13"> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;else { 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FileString += "&lt;div id = \"div" + std::to_string(counter); FileString += "\"&gt;"; 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FileString += tok;  // current line of tokens does not contain any class name 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;counter++;          //or function name and just  contains opening bracket 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;} 
+</div><br> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;} 
+</div><br> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;else if (tok.find("}") &gt;= 0 && tok.find("}") &lt; tok.length()) {&nbsp;&nbsp;&nbsp;&nbsp; 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FileString += tok + "&lt;/div&gt;&lt;br&gt;"; 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;} 
+</div><br><div id = "div14"> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;else { 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FileString += tok; //no brackets 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;} 
+</div><br> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;} 
+</div><br> &nbsp;&nbsp;&nbsp;&nbsp;} while (in.good()); 
+</div><br> } 
+</div><br>  
+ //Ends HTML file. 
+ void ConvertToHtml::FileClose() 
+ {<button onClick = "OnClickDiv('div15', 'button15')" id = "button15">-</button><div id = "div15"> 
+ &nbsp;&nbsp;&nbsp;&nbsp;FileString = FileString + "\n&lt;/pre&gt;"; 
+ &nbsp;&nbsp;&nbsp;&nbsp;FileString = FileString + "&lt;a href = Home.htm " + "class = button " + "&gt;" + "Home" + "&lt;/a&gt;"; 
+ &nbsp;&nbsp;&nbsp;&nbsp;FileString = FileString + "\n&lt;/body&gt;\n" + "&lt;/html&gt;"; 
+ &nbsp;&nbsp;&nbsp;&nbsp;std::string File_name = SourceFileName.substr(SourceFileName.rfind('\\') + 1); 
+ &nbsp;&nbsp;&nbsp;&nbsp;std::ofstream out( DestDirName + "\\" + File_name + ".htm"); 
+<div id = "div16"> &nbsp;&nbsp;&nbsp;&nbsp;if (out.good()) { 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;out << FileString; 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;out.close(); 
+ &nbsp;&nbsp;&nbsp;&nbsp;} 
+</div><br> } 
+</div><br>  
+  
+ // Any markup character which is to be escaped will be replaced by appropriate exit code. 
+ std::string ConvertToHtml::ReplaceAll(std::string str, const std::string& from, const std::string& to) {<button onClick = "OnClickDiv('div17', 'button17')" id = "button17">-</button><div id = "div17"> 
+ &nbsp;&nbsp;&nbsp;&nbsp;size_t start_pos = 0; 
+<div id = "div18"> &nbsp;&nbsp;&nbsp;&nbsp;while ((start_pos = str.find(from, start_pos)) != std::string::npos ) { 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if ((!(str[start_pos + 1] == from[0] || str[start_pos - 1] == from[0]))) 
+<div id = "div19"> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{ 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;str.replace(start_pos, from.length(), to); 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;start_pos += to.length(); // Handles case where 'to' is a substring of 'from' 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;} 
+</div><br> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;else 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;start_pos = start_pos + 1;  
+ &nbsp;&nbsp;&nbsp;&nbsp;} 
+</div><br> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+ &nbsp;&nbsp;&nbsp;&nbsp;return str; 
+ } 
+</div><br>  
+ // creates JavaScript file 
+ void ConvertToHtml::CreateJS() 
+ {<button onClick = "OnClickDiv('div20', 'button20')" id = "button20">-</button><div id = "div20"> 
+ &nbsp;&nbsp;&nbsp;&nbsp;std::ofstream out(DestDirName + "\\" + "JSFile.js"); 
+<div id = "div21"> &nbsp;&nbsp;&nbsp;&nbsp;if (out.good()) { 
+<div id = "div22"> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;out << "function OnClickDiv(divId, buttonId){\n";  
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;out << "\tvar value = document.getElementById(divId).style.display;\n"; 
+<div id = "div23"> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;out << "\tif(value != 'none'){\n"; 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;out << "\t\tdocument.getElementById(divId).style.display = 'none';\n"; 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;out << "\t\tdocument.getElementById(buttonId).innerHTML = '+';\n"; 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;out << "\t}else{\n"; 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;out << "\t\tdocument.getElementById(divId).style.display = 'block';\n"; 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;out << "\t\tdocument.getElementById(buttonId).innerHTML = '-';\n"; 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;out << "\t}\n"; 
+</div><br> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;out << "}\n"; 
+</div><br> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;out.close(); 
+ &nbsp;&nbsp;&nbsp;&nbsp;} 
+</div><br> } 
+</div><br>  
+ // creates CSS file. 
+ void CodeAnalysis::ConvertToHtml::CreateCSS() 
+ {<button onClick = "OnClickDiv('div24', 'button24')" id = "button24">-</button><div id = "div24"> 
+ &nbsp;&nbsp;&nbsp;&nbsp;std::ofstream out(DestDirName + "\\" + "CSSFile.css"); 
+<div id = "div25"> &nbsp;&nbsp;&nbsp;&nbsp;if (out.good()) { 
+<div id = "div26"> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;out << "body {\n\tmargin:20px;\n\tcolor:black;\n\tbackground-color:#eee;\n\tfont-family:Consolas;\n\t"; 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;out << "font-weight:600;\n\tfont-size:110%;\n}\n"; 
+</div><br> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;out << ".indent {\n\tmargin-left:20px;\n\tmargin-right:20px;\n}\n"; 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;out << "h4 {\n\tmargin-bottom: 3px;\n\tmargin-top:3px;\n}\n"; 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;out << "h3 {\n\ttext-align: center;\n}\n"; 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;out << "table {\n\tfont-family: arial, sans-serif;\n\twidth: 100%;\n}\n"; 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;out << "td, th {\n\tborder: 1px solid #dddddd;\n\ttext-align: center;\n\tpadding: 8px;\n}\n"; 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;out << "tr:nth-child(even) {\n\tbackground-color: #dddddd;\n\ttext-align: center;\n}\n"; 
+<div id = "div27"> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;out << ".button {\n\tbackground-color: #555555;\n\tborder: none;\n\tborder-radius: 8px;\n\tcolor: white;\n\t"; 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;out << "padding: 15px 32px;\n\ttext-align: center;\n\ttext-decoration: none;\n\tdisplay: inline-block;\n\t"; 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;out << "font-size: 16px;\n\tfloat: center;\n}\n"; 
+</div><br> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;out.close(); 
+ &nbsp;&nbsp;&nbsp;&nbsp;} 
+</div><br>  
+ } 
+</div><br>  
+ // this function checks if css and javascript files  
+ //are already created and prevents creation of files every time. 
+ bool ConvertToHtml::FileExists(const std::string& name) {<button onClick = "OnClickDiv('div28', 'button28')" id = "button28">-</button><div id = "div28"> 
+ &nbsp;&nbsp;&nbsp;&nbsp;ifstream f(name.c_str()); 
+ &nbsp;&nbsp;&nbsp;&nbsp;return f.good(); 
+ } 
+</div><br>  
+ //this function checks if current token  
+ //is class function or global function used for expand and collapse. 
+ bool ConvertToHtml::CheckForClassFunGlfn(std::string line,std::string FileStr) 
+ {<button onClick = "OnClickDiv('div29', 'button29')" id = "button29">-</button><div id = "div29"> 
+ &nbsp;&nbsp;&nbsp;&nbsp;std::size_t last_occ = FileStr.find_last_of("\n"); 
+ &nbsp;&nbsp;&nbsp;&nbsp;FileStr = FileStr.substr(0, last_occ); 
+ &nbsp;&nbsp;&nbsp;&nbsp;std::size_t SecLast_occ = FileStr.find_last_of("\n"); 
+ &nbsp;&nbsp;&nbsp;&nbsp;FileStr = FileStr.substr(SecLast_occ); 
+ &nbsp;&nbsp;&nbsp;&nbsp;if (line.find("if") != std::string::npos || line.find("while") != std::string::npos ||  
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;line.find("for") != std::string::npos || line.find("else") != std::string::npos) 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;return false; 
+ &nbsp;&nbsp;&nbsp;&nbsp;if (FileStr.find("if") != std::string::npos || FileStr.find("while") != std::string::npos ||  
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FileStr.find("for") != std::string::npos || FileStr.find("else") != std::string::npos) 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;return false; 
+ &nbsp;&nbsp;&nbsp;&nbsp;if (ChkBrOnlyLine(line)) 
+<div id = "div30"> &nbsp;&nbsp;&nbsp;&nbsp;{ 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;for (auto i = typeTable.getTypeTable().begin(); i != typeTable.getTypeTable().end(); ++i) 
+<div id = "div31"> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{ 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::size_t f1 = FileStr.find(i-&gt;first); 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if (f1 != std::string::npos) 
+<div id = "div32"> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{ 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if (i-&gt;second.front().tname == "class" || i-&gt;second.front().tname == "global function" ||  
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;i-&gt;second.front().tname == "function") 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{<button onClick = "OnClickDiv('div33', 'button33')" id = "button33">-</button><div id = "div33"> 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;return true; 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;} 
+</div><br> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;} 
+</div><br> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;} 
+</div><br> &nbsp;&nbsp;&nbsp;&nbsp;} 
+</div><br> &nbsp;&nbsp;&nbsp;&nbsp;else 
+<div id = "div34"> &nbsp;&nbsp;&nbsp;&nbsp;{  
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;for (auto i = typeTable.getTypeTable().begin(); i != typeTable.getTypeTable().end(); ++i) 
+<div id = "div35"> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{ 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::size_t f = line.find(i-&gt;first);  
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if (f != std::string::npos) 
+<div id = "div36"> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{ 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if (i-&gt;second.front().tname == "class" || i-&gt;second.front().tname == "global function" ||  
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;i-&gt;second.front().tname == "function") 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{<button onClick = "OnClickDiv('div37', 'button37')" id = "button37">-</button><div id = "div37"> 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;return true; 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;} 
+</div><br> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;} 
+</div><br> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;} 
+</div><br> &nbsp;&nbsp;&nbsp;&nbsp;} 
+</div><br> &nbsp;&nbsp;&nbsp;&nbsp;return false; 
+ } 
+</div><br>  
+ //creates home page listing all files and dependancies 
+ void ConvertToHtml::CreateHomePage(std::vector&lt;std::string&gt; files) 
+ {<button onClick = "OnClickDiv('div38', 'button38')" id = "button38">-</button><div id = "div38"> 
+ &nbsp;&nbsp;&nbsp;&nbsp;std::ofstream out(DestDirName + "\\" + "Home.htm"); 
+<div id = "div39"> &nbsp;&nbsp;&nbsp;&nbsp;if (out.good()) { 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;out << "&lt;html&gt;\n"; 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;out << "&lt;head&gt;\n"; 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;out << "&lt;link rel = "; out << "stylesheet ";  out << "href = "; out << "CSSFile.css"; out << "&gt;"; 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;out << "\n&lt;/head&gt;\n"; out << "&lt;body&gt;\n"; //referance to CSS file. 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;out << "&lt;h3&gt;"; out << "Home"; out << "&lt;/h3&gt;"; 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if (depgraph.size() != 0) 
+<div id = "div40"> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{ 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;out << "&lt;table&gt;"; 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;out << "&lt;tr&gt;"; out << "&lt;th&gt;"; out << "Files"; out << "&lt;/th&gt;"; 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;out << "&lt;th&gt;"; out << "Dependant Files"; out << "&lt;/th&gt;"; out << "&lt;/tr&gt;"; 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;for (auto it = depgraph.begin(); it != depgraph.end(); ++it) 
+<div id = "div41"> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{ 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;out << "&lt;tr&gt;\n"; 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Vertex&lt;std::string, std::string&gt; v = *it; 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;out << "&lt;td&gt;\n"; 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;out << "&lt;a href = "; out << (v.value()).c_str(); out << ".htm"; out << "&gt; ";   
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;out << (v.value()).c_str(); out << "&lt;/a&gt;"; 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;out << "&lt;/td&gt;\n"; 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;out << "&lt;td&gt;\n"; 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;for (size_t i = 0; i &lt; v.size(); ++i) 
+<div id = "div42"> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{ 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Vertex&lt;std::string, std::string&gt;::Edge edge = v[i]; 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;out << "&lt;a href = "; out << depgraph[edge.first].value().c_str();  
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;out << ".htm"; out << "&gt; "; out << depgraph[edge.first].value().c_str();  
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;out << "&lt;/a&gt;"; out << "\n"; 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;} 
+</div><br> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;out << "&lt;/td&gt;\n"; 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;out << "&lt;/tr&gt;\n"; 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;} 
+</div><br> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;out << "&lt;/table&gt;"; 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;} 
+</div><br> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;else 
+<div id = "div43"> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{ 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;for (size_t i = 0;i &lt; files.size();i++) 
+<div id = "div44"> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{ 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;out << "&lt;a href = "; out << files[i] ; out << "&gt; ";  out << files[i] << "&lt;/a&gt;\n"; 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;} 
+</div><br> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;} 
+</div><br> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;out << "&lt;/body&gt;"; 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;out << "&lt;/html&gt;"; 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;out.close(); 
+ &nbsp;&nbsp;&nbsp;&nbsp;} 
+</div><br> } 
+</div><br>  
+ //sets destination folder path in which HTM files are stored 
+ void ConvertToHtml::SetDestDirName(std::string destDirName) 
+ {<button onClick = "OnClickDiv('div45', 'button45')" id = "button45">-</button><div id = "div45"> 
+ &nbsp;&nbsp;&nbsp;&nbsp;DestDirName = destDirName; 
+ } 
+</div><br>  
+ //opens htm file stated in command line 
+ void ConvertToHtml::OpenCommandLineFile(int argc, char * argv[]) 
+ {<button onClick = "OnClickDiv('div46', 'button46')" id = "button46">-</button><div id = "div46"> 
+ &nbsp;&nbsp;&nbsp;&nbsp;size_t find; 
+ &nbsp;&nbsp;&nbsp;&nbsp;std::string path = "Home.htm"; //by default Home.htm will be opened if no other file  
+ &nbsp;&nbsp;&nbsp;&nbsp;std::string str;               //stated in the command line 
+ &nbsp;&nbsp;&nbsp;&nbsp;for (int i = 2; i &lt; argc; i++) 
+<div id = "div47"> &nbsp;&nbsp;&nbsp;&nbsp;{ 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;str = argv[i]; 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;find = str.find(".htm"); 
+<div id = "div48"> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if (find != std::string::npos) { 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;path = str; 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;break; 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;} 
+</div><br> &nbsp;&nbsp;&nbsp;&nbsp;} 
+</div><br> &nbsp;&nbsp;&nbsp;&nbsp;std::string homeLink = DestDirName + "\\" + path; 
+ &nbsp;&nbsp;&nbsp;&nbsp;std::wstring wHomeLink = std::wstring(homeLink.begin(), homeLink.end()); 
+ &nbsp;&nbsp;&nbsp;&nbsp;LPCWSTR sw = wHomeLink.c_str(); 
+ &nbsp;&nbsp;&nbsp;&nbsp;ShellExecute(0, 0, sw, 0, 0, SW_SHOW); 
+ } 
+</div><br>  
+ //inserts prologue in each HTM file 
+ void ConvertToHtml::InsertPrologue() 
+ {<button onClick = "OnClickDiv('div49', 'button49')" id = "button49">-</button><div id = "div49"> 
+ &nbsp;&nbsp;&nbsp;&nbsp;FileString = "&lt;!----------------------------------------------------------------------------\n"; 
+ &nbsp;&nbsp;&nbsp;&nbsp;std::string File_name = SourceFileName.substr(SourceFileName.rfind('\\') + 1); 
+ &nbsp;&nbsp;&nbsp;&nbsp;FileString += File_name + ".htm " + "- Generated HTML file of Project #3\n" ; 
+ &nbsp;&nbsp;&nbsp;&nbsp;FileString += "Published 04 April 2017\n"; 
+ &nbsp;&nbsp;&nbsp;&nbsp;FileString += "Nupur Kulkarni, CSE687 - Object Oriented Design, Spring 2017\n\n"; 
+ &nbsp;&nbsp;&nbsp;&nbsp;FileString += "Note:\n"; 
+ &nbsp;&nbsp;&nbsp;&nbsp;FileString += "- Markup characters in the text part, enclosed in &lt;pre&gt;...&lt;/pre&gt; have been \n"; 
+ &nbsp;&nbsp;&nbsp;&nbsp;FileString += "  replaced with escape sequences, e.g., &lt; becomes &lt; and &gt; becomes &gt;\n"; 
+ &nbsp;&nbsp;&nbsp;&nbsp;FileString += "-----------------------------------------------------------------------------&gt;\n"; 
+  
+ } 
+</div><br>  
+ // function used to check if line contains only opening bracket 
+ bool ConvertToHtml::ChkBrOnlyLine(std::string line) 
+ {<button onClick = "OnClickDiv('div50', 'button50')" id = "button50">-</button><div id = "div50"> 
+ &nbsp;&nbsp;&nbsp;&nbsp;line = line.substr(0, line.find("{<button onClick = "OnClickDiv('div51', 'button51')" id = "button51">-</button><div id = "div51">") - 1); 
+ &nbsp;&nbsp;&nbsp;&nbsp;for (size_t i = 0 ;i&lt; line.size();) 
+<div id = "div52"> &nbsp;&nbsp;&nbsp;&nbsp;{ 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if (line[i] == ' ' || line[i] == '&' || line[i] == 'n' ||  
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;line[i] == 'b' || line[i] == 's' || line[i] == 'p' || line[i] == ';' || isblank(line[i])) 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;i++; 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;else 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;return false; 
+ &nbsp;&nbsp;&nbsp;&nbsp;} 
+</div><br> &nbsp;&nbsp;&nbsp;&nbsp;return true; 
+ } 
+</div><br>  
+ //replaces tab with exit code. 
+ std::string CodeAnalysis::ConvertToHtml::ReplaceTab(std::string str, const std::string & from, const std::string & to) 
+ {<button onClick = "OnClickDiv('div53', 'button53')" id = "button53">-</button><div id = "div53"> 
+ &nbsp;&nbsp;&nbsp;&nbsp;size_t start_pos = 0; 
+<div id = "div54"> &nbsp;&nbsp;&nbsp;&nbsp;while ((start_pos = str.find(from, start_pos)) != std::string::npos) { 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;str.replace(start_pos, from.length(), to); 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;start_pos += to.length(); // Handles case where 'to' is a substring of 'from' 
+ &nbsp;&nbsp;&nbsp;&nbsp;} 
+</div><br> &nbsp;&nbsp;&nbsp;&nbsp;return str; 
+ } 
+</div><br>  
+  
+ //------------------------------------Test Stub----------------------------------------------// 
+  
+ #ifdef TEST_CONVERTTOHTML 
+  
+ int main() 
+ {<button onClick = "OnClickDiv('div55', 'button55')" id = "button55">-</button><div id = "div55"> 
+ &nbsp;&nbsp;&nbsp;&nbsp;ConvertToHtml cth1; 
+ &nbsp;&nbsp;&nbsp;&nbsp;cth1.SetFileName(file); 
+ &nbsp;&nbsp;&nbsp;&nbsp;cth1.SetDestDirName(DestFolderPath); 
+ &nbsp;&nbsp;&nbsp;&nbsp;cth1.InsertPrologue(); 
+ &nbsp;&nbsp;&nbsp;&nbsp;cth1.FileInitialization(); 
+ &nbsp;&nbsp;&nbsp;&nbsp;cth1.EnterCode(file); 
+ &nbsp;&nbsp;&nbsp;&nbsp;cth1.FileClose(); 
+ } 
+</div><br>  
+ #endif 
+  
+  
+  
+  
+
+</pre>
+</body>
+</html>

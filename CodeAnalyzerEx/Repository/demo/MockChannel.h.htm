@@ -1,0 +1,124 @@
+<!----------------------------------------------------------------------------
+MockChannel.h.htm - Generated HTML file of Project #3
+Published 04 April 2017
+Nupur Kulkarni, CSE687 - Object Oriented Design, Spring 2017
+
+Note:
+- Markup characters in the text part, enclosed in <pre>...</pre> have been 
+  replaced with escape sequences, e.g., < becomes &lt; and > becomes &gt;
+----------------------------------------------------------------------------->
+<html>
+<head>
+<link rel = stylesheet href = CSSFile.css>
+<script src= JSFile.js></script>
+</head>
+<body>
+<h3>MockChannel.h</h3>
+<hr />
+<div class=indent><h4>Dependencies:</h4><p><a href = Logger.cpp.htm> Logger.cpp</a></p><p><a href = MockChannel.cpp.htm> MockChannel.cpp</a></p><p><a href = MsgServer.cpp.htm> MsgServer.cpp</a></p><p><a href = Window.cpp.htm> Window.cpp</a></p><p><a href = Logger.h.htm> Logger.h</a></p></div>
+<hr />
+<pre>
+ #ifndef MOCKCHANNEL_H 
+ #define MOCKCHANNEL_H 
+ ///////////////////////////////////////////////////////////////////////////// 
+ // MockChannel.h - Demo for CSE687 Project #4, Spring 2015                 // 
+ // - build as DLL to show how C++\CLI client can use native code channel   // 
+ // - MockChannel reads from sendQ and writes to recvQ                      // 
+ // ver 1.0                                                                 // 
+ // Language:    C++, Visual Studio 2015                                    // 
+ // Platform:    Lenovo Ideapad 500, Windows 10, AMD A10 x64&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;       // 
+ // Application: Remote Code Publisher, Project 4&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;       // 
+ //              CSE687 - Object Oriented Design&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;       // 
+ // Author:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Nupur Kulkarni, Syracuse University&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;       // 
+ //&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;nvkulkar@syr.edu&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;       // 
+ // Source:      Jim Fawcett, CST 2-187, Syracuse University&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;           // 
+ //              (315) 443-3948, jfawcett@twcny.rr.com&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;       // 
+ ///////////////////////////////////////////////////////////////////////////// 
+ /* 
+ * Package Operations: 
+ * ------------------- 
+ * This package defines an IMockChannel interface, that the MockChannel 
+ * class implements. This Communication Channel can be used to 
+ * interact with the remote code publisher server. It accepts and returns 
+ * HTTPMessages in string format, which will be parsed to get the required 
+ * information. Sending and receiving of files and messages is done via 
+ * SocketConnectors and Listeners that run on child threads. 
+ * 
+ * An Object factory is defined, which is used to get a pointer to the 
+ * IMockChannel interface. 
+ * 
+ * This package also provides a ServerHandler class, which is a helper class 
+ * for the client. It handles receiving of messages sent by the remote server 
+ * 
+ * 
+ * Public Interface: 
+ * -------------------- 
+ * createMockChannel(std::string addr, size_t port)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;: returns a pointer to an instance of IMockChannel 
+ * start()&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;: starts the send thread and socket listener 
+ * stop()&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;: stops the send thread, socket listener and receive threads 
+ * connect(std::string addr, size_t port)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;: connects the mock channel to the specified address and port 
+ * postMessage(HTTPMessage hMsg)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;: enqueues a message for sending 
+ * getMessage()&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;: dequeues a message that was received 
+ * 
+ * 
+ * Build Process: 
+ * -------------- 
+ * Required Files: 
+ *   MockChannel.h, MockChannel.cpp 
+ *   BlockingQueue.h, BlockingQueue.cpp, Utilities.h, Utilities.cpp 
+ *   Sockets.h, Sockets.cpp, FileSystem.h, FileSystem.cpp 
+ *   HTTPMessage.h, HTTPMessage.cpp, FileMgr.h, IFileMgr.h, 
+ * 
+ * Build Command: devenv RemoteRepository.sln /rebuild debug 
+ * 
+ * Maintenance History: 
+ * -------------------- 
+ * ver 1.0 : 30 Apr 2016 
+ * - first release 
+ */ 
+  
+ #ifdef IN_DLL 
+ #define DLL_DECL __declspec(dllexport) 
+ #else 
+ #define DLL_DECL __declspec(dllimport) 
+ #endif 
+  
+ #include &lt;string&gt; 
+ using Message = std::string; 
+  
+ struct ISendr 
+ {<button onClick = "OnClickDiv('div1', 'button1')" id = "button1">-</button><div id = "div1"> 
+ &nbsp;&nbsp;&nbsp;&nbsp;virtual void postMessage(const Message& msg) = 0; 
+ }; 
+</div><br>  
+ struct IRecvr 
+ {<button onClick = "OnClickDiv('div2', 'button2')" id = "button2">-</button><div id = "div2"> 
+ &nbsp;&nbsp;&nbsp;&nbsp;virtual std::string getMessage() = 0; 
+ }; 
+</div><br>  
+ struct IMockChannel 
+ {<button onClick = "OnClickDiv('div3', 'button3')" id = "button3">-</button><div id = "div3"> 
+ public: 
+ &nbsp;&nbsp;&nbsp;&nbsp;virtual void postMessage(Message msg) = 0; 
+ &nbsp;&nbsp;&nbsp;&nbsp;virtual Message getMessage() = 0; 
+ &nbsp;&nbsp;&nbsp;&nbsp;virtual void start() = 0; 
+ &nbsp;&nbsp;&nbsp;&nbsp;virtual void stop() = 0; 
+ &nbsp;&nbsp;&nbsp;&nbsp;virtual bool connect(std::string addr, size_t port) = 0; 
+ &nbsp;&nbsp;&nbsp;&nbsp;virtual void manualExecution() = 0; 
+ }; 
+</div><br>  
+<div id = "div4"> extern "C" { 
+ &nbsp;&nbsp;&nbsp;&nbsp;struct ObjectFactory 
+<div id = "div5"> &nbsp;&nbsp;&nbsp;&nbsp;{ 
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;DLL_DECL IMockChannel* createMockChannel(std::string addr, size_t port); 
+ &nbsp;&nbsp;&nbsp;&nbsp;}; 
+</div><br> } 
+</div><br>  
+ #endif 
+  
+  
+  
+
+</pre>
+</body>
+</html>

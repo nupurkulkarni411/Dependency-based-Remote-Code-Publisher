@@ -1,0 +1,217 @@
+<!----------------------------------------------------------------------------
+Logger.cpp.htm - Generated HTML file of Project #3
+Published 04 April 2017
+Nupur Kulkarni, CSE687 - Object Oriented Design, Spring 2017
+
+Note:
+- Markup characters in the text part, enclosed in <pre>...</pre> have been 
+  replaced with escape sequences, e.g., < becomes &lt; and > becomes &gt;
+----------------------------------------------------------------------------->
+<html>
+<head>
+<link rel = stylesheet href = CSSFile.css>
+<script src= JSFile.js></script>
+</head>
+<body>
+<h3>Logger.cpp</h3>
+<hr />
+<div class=indent><h4>Dependencies:</h4><p><a href = Logger.h.htm> Logger.h</a></p><p><a href = Graph.h.htm> Graph.h</a></p><p><a href = SemiExp.cpp.htm> SemiExp.cpp</a></p><p><a href = MockChannel.cpp.htm> MockChannel.cpp</a></p><p><a href = Graph.cpp.htm> Graph.cpp</a></p><p><a href = ConvertToHtml.cpp.htm> ConvertToHtml.cpp</a></p><p><a href = HttpMessage.cpp.htm> HttpMessage.cpp</a></p><p><a href = MsgServer.cpp.htm> MsgServer.cpp</a></p><p><a href = TypeAnal.cpp.htm> TypeAnal.cpp</a></p><p><a href = Window.cpp.htm> Window.cpp</a></p></div>
+<hr />
+<pre>
+ ///////////////////////////////////////////////////////////////////// 
+ // Logger.cpp - log text messages to std::ostream                  // 
+ // ver 1.2                                                         // 
+ //-----------------------------------------------------------------// 
+ // Jim Fawcett (c) copyright 2015                                  // 
+ // All rights granted provided this copyright notice is retained   // 
+ //-----------------------------------------------------------------// 
+ // Language:    C++, Visual Studio 2015                            // 
+ // Application: Several Projects, CSE687 - Object Oriented Design  // 
+ // Author:      Jim Fawcett, Syracuse University, CST 4-187        // 
+ //              jfawcett@twcny.rr.com                              // 
+ ///////////////////////////////////////////////////////////////////// 
+  
+ #include &lt;functional&gt; 
+ #include &lt;fstream&gt; 
+ #include &lt;windows.h&gt; 
+ #include "Logger.h" 
+ #include "../Utilities/Utilities.h" 
+  
+ using namespace Logging; 
+  
+ //----&lt; send text message to std::ostream &gt;-------------------------- 
+  
+ void Logger::write(const std::string& msg) 
+ {<button onClick = "OnClickDiv('div1', 'button1')" id = "button1">-</button><div id = "div1"> 
+   if(_ThreadRunning) 
+     _queue.enQ(msg); 
+ } 
+</div><br> void Logger::title(const std::string& msg, char underline) 
+ {<button onClick = "OnClickDiv('div2', 'button2')" id = "button2">-</button><div id = "div2"> 
+   std::string temp = "\n  " + msg + "\n " + std::string(msg.size() + 2, underline); 
+   write(temp); 
+ } 
+</div><br> //----&lt; attach logger to existing std::ostream &gt;--------------------- 
+  
+ void Logger::attach(std::ostream* pOut)  
+ {<button onClick = "OnClickDiv('div3', 'button3')" id = "button3">-</button><div id = "div3">  
+   streams_.push_back(pOut); 
+   //_pOut = pOut;  
+ } 
+</div><br> //----&lt; start logging &gt;---------------------------------------------- 
+ /* 
+  *  log to all the attached streams 
+  */ 
+ void Logger::start() 
+ {<button onClick = "OnClickDiv('div4', 'button4')" id = "button4">-</button><div id = "div4"> 
+   if (_ThreadRunning) 
+     return; 
+   _ThreadRunning = true; 
+   std::function&lt;void()&gt; tp = [=]() {<button onClick = "OnClickDiv('div5', 'button5')" id = "button5">-</button><div id = "div5"> 
+     while (true) 
+<div id = "div6">     { 
+       std::string msg = _queue.deQ(); 
+       if (msg == "quit") 
+<div id = "div7">       { 
+         _ThreadRunning = false; 
+         break; 
+       } 
+</div><br>       for (auto pStrm : streams_) 
+<div id = "div8">       { 
+         *pStrm << msg; 
+       } 
+</div><br>     } 
+</div><br>   }; 
+</div><br>   _pThr = new std::thread (tp); 
+   //thr.detach(); 
+ } 
+</div><br> //----&lt; has logger been started? &gt;----------------------------------- 
+  
+ bool Logger::running() 
+ {<button onClick = "OnClickDiv('div9', 'button9')" id = "button9">-</button><div id = "div9"> 
+   return _ThreadRunning; 
+ } 
+</div><br> //----&lt; suspend logger &gt;--------------------------------------------- 
+  
+ void Logger::pause(bool doPause) 
+ {<button onClick = "OnClickDiv('div10', 'button10')" id = "button10">-</button><div id = "div10"> 
+   if (doPause) 
+<div id = "div11">   { 
+     _Paused = true; 
+     ::SuspendThread(_pThr-&gt;native_handle()); 
+   } 
+</div><br>   else 
+<div id = "div12">   { 
+     _Paused = false; 
+     ::ResumeThread(_pThr-&gt;native_handle()); 
+   } 
+</div><br> } 
+</div><br> //----&lt; is logger currently paused? &gt;-------------------------------- 
+  
+ bool Logger::paused() 
+ {<button onClick = "OnClickDiv('div13', 'button13')" id = "button13">-</button><div id = "div13"> 
+   return _Paused; 
+ } 
+</div><br> //----&lt; wait for logging to empty input queue &gt;---------------------- 
+  
+ void Logger::flush() 
+ {<button onClick = "OnClickDiv('div14', 'button14')" id = "button14">-</button><div id = "div14"> 
+   if (_ThreadRunning && !_Paused) 
+<div id = "div15">   { 
+     while (_queue.size() &gt; 0) 
+       ; 
+     for (auto pStream : streams_) 
+       pStream-&gt;flush(); 
+   } 
+</div><br> } 
+</div><br> //----&lt; stop logging &gt;----------------------------------------------- 
+  
+ void Logger::stop(const std::string& msg) 
+ {<button onClick = "OnClickDiv('div16', 'button16')" id = "button16">-</button><div id = "div16"> 
+   if (_ThreadRunning) 
+<div id = "div17">   { 
+     if(msg != "") 
+       write(msg); 
+     write("quit");    // request thread to stop 
+     if (_pThr-&gt;joinable()) 
+       _pThr-&gt;join();  // wait for queue to empty 
+  
+     _ThreadRunning = false; 
+   } 
+</div><br> } 
+</div><br> //----&lt; wait for logger to finish &gt;---------------------------------- 
+  
+ void Logger::wait() 
+ {<button onClick = "OnClickDiv('div18', 'button18')" id = "button18">-</button><div id = "div18"> 
+   if (_ThreadRunning && _pThr-&gt;joinable()) 
+     _pThr-&gt;join(); 
+ } 
+</div><br> //----&lt; stop logging thread &gt;---------------------------------------- 
+  
+ Logger::~Logger() 
+ {<button onClick = "OnClickDiv('div19', 'button19')" id = "button19">-</button><div id = "div19"> 
+   stop(); 
+ } 
+</div><br>  
+ struct Cosmetic 
+<div id = "div20"> { 
+   ~Cosmetic() { std::cout << "\n\n"; } 
+ } cosmetic; 
+</div><br>  
+ #ifdef TEST_LOGGER 
+  
+ using Util = Utilities::StringHelper; 
+  
+ int main() 
+ {<button onClick = "OnClickDiv('div21', 'button21')" id = "button21">-</button><div id = "div21"> 
+   //Util::Title("Testing Logger Class"); 
+   Logger log; 
+   log.attach(&std::cout); 
+   std::ofstream out("logFile.txt"); 
+   if (out.good()) 
+     log.attach(&out); 
+   else 
+     std::cout << "\n  couldn't open logFile for writing"; 
+   log.write("\n  won't get logged - not started yet"); 
+   log.start(); 
+   log.title("Testing Logger Class", '='); 
+   log.write("\n  one"); 
+   log.write("\n  two"); 
+   log.write("\n  fini"); 
+   log.stop(); 
+   log.write("\n  won't get logged - stopped"); 
+   log.start(); 
+   log.write("\n  starting again"); 
+   log.write("\n  and stopping again"); 
+   log.stop("\n  log terminating now"); 
+   log.wait(); 
+  
+   StaticLogger&lt;1&gt;::attach(&std::cout); 
+   StaticLogger&lt;1&gt;::attach(&out); 
+   StaticLogger&lt;1&gt;::start(); 
+   StaticLogger&lt;1&gt;::write("\n"); 
+   StaticLogger&lt;1&gt;::title("Testing StaticLogger class"); 
+   StaticLogger&lt;1&gt;::write("\n  static logger at work"); 
+   Logger& logger = StaticLogger&lt;1&gt;::instance(); 
+   logger.write("\n  static logger still at work"); 
+  
+   for(size_t i=0; i&lt;5; ++i) 
+     logger.write("\n  a log msg"); 
+   logger.write("\n  suspending logger"); 
+   logger.pause(true); 
+   for (size_t i = 0; i&lt;5; ++i) 
+     logger.write("\n  a log msg written while log suspended"); 
+  
+   logger.pause(false); 
+   logger.write("\n  a log msg written after log resumed"); 
+   logger.stop("\n  stopping static logger"); 
+   logger.wait(); 
+   out.close(); 
+ } 
+</div><br>  
+ #endif 
+  
+
+</pre>
+</body>
+</html>
